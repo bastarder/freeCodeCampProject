@@ -1,0 +1,279 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css">
+  
+  <style>
+    .game{
+      background-color: black;
+      padding: 10px;
+    }
+    .block{
+      height: 180px;
+      padding: 0px;
+      border: 2px solid #eee;
+      cursor: pointer;
+    }
+    
+    .score{
+      color: white;
+      font-family: -webkit-body;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    
+    .block:active{
+      border: 4px solid #eee;
+    }
+    
+    .tip{
+      display: inline-block;
+      position: absolute;
+      top: 172px;
+      left: 30px;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      width: 334px;
+      height: 286px;
+      text-align: center;
+      font-size: 36px;
+      line-height: 200px;
+    }
+    
+    .tip .fa{
+      font-size: 60px;
+    }
+
+  </style>
+
+<body ng-app="SimonGame" ng-controller="mainCtrl as vm">
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-4"></div>
+      <div class="col-xs-4 game">
+        <div class="score col-xs-12">
+          关卡 : {{vm.game.tabLength}}<br>
+          分数 : {{vm.game.score}}<br>
+          高分 : {{vm.game.hightscore}}<br>
+          模式 : 
+          <span>
+            {{vm.game.isStrict ? '专家' : '娱乐'}}
+            <i class="fa fa-refresh" ng-click="vm.game.isStrict = !vm.game.isStrict"></i>
+          </span>
+        </div>
+        <div ng-repeat="block in vm.blocks">
+          <div class="block block-{{block.num}} col-xs-6" 
+            ng-style="{'background':block.color}"
+            ng-click="vm.game.isCorrect(block)">
+          </div>
+        </div>
+        <div class="tip" ng-show="vm.game.isOver">
+          <span>游戏结束: {{vm.game.score}} 分</span><br>
+          <i class="fa fa-refresh" ng-click="vm.game.start()"></i>
+        </div>
+        <div class="tip" ng-show="vm.game.isWin">
+          <span>通关啦! 满分! {{vm.game.score}} 分</span><br>
+          <i class="fa fa-refresh" ng-click="vm.game.start()"></i>
+        </div>
+      </div>
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+  <script>
+    
+    (function(){
+      angular
+      .module('SimonGame',[])
+      .controller('mainCtrl',controller);
+
+      function controller($scope, $http, $location, $interval, $timeout){
+        var vm = this;
+        vm.blocks = [];
+        vm.errorSound = createSound(256); // 错误提示音;
+        
+        ///////////////////
+        
+        function init(){
+          var bgColor   = ['#d9534f', '#f0ad4e', '#5bc0de', '#5cb85c'];   // 按钮颜色;
+          var audioCode = [384, 426, 480, 512];                           // 按键音;   // 256 错误提示音
+        
+          for(var i=0; i<4; i++){
+            var block = {
+              color:bgColor[i],
+              num:i+1,
+              sound:createSound(audioCode[i]),
+              flash: function (speed,noSound){
+                speed = speed || 400;
+                var selector = '.block-' + this.num;
+                $(selector).animate({
+                  opacity : 0
+                },speed,function(){
+                  $(selector).animate({
+                    opacity : 1
+                  },speed)
+                }); 
+                noSound || this.sound.short(speed * 2);
+              }
+            };
+            vm.blocks.push(block);
+          }
+         
+          vm.game.start();
+          
+        }
+        
+        function createSound(audioCode){
+            var context = new AudioContext;
+            var sound = context.createOscillator();
+            sound.frequency.value = audioCode;
+            sound.start();
+            var soundObj = {
+              context : context,
+              sound   : sound,
+              // 开启音效;
+              start : function(){
+                this.sound.connect(this.context.destination);
+              },
+              // 关闭音效;
+              stop : function(){
+                this.sound.disconnect();
+              },
+              // 播放一次音效 持续 time 毫秒;
+              short : function(time){
+                var sound = this.sound;
+                time = time || 300;
+                sound.connect(this.context.destination)
+                $timeout(function(){
+                  sound.disconnect();
+                }, time);
+              }
+            }
+           return soundObj;
+        }
+        
+        vm.game = {
+          tabLength : 0,
+          score : 0,
+          isStrict : false,
+          isOver: false,
+          isWin : false,
+          hightscore : 0,
+          gamerHand : false,
+          currentIndex : 0,
+          currentLevel : [],
+          failDelayId : '',
+          intervalId : '',
+          createNewLevel : function (){
+            var level = [];
+            this.gamerHand = false;
+            this.tabLength += 1;
+            this.currentIndex = 0;
+            for(var i=0; i<this.tabLength; i++){
+              level.push(randomNum());
+            }
+            this.currentLevel = level;
+            return level;
+            // 获取一个1-4之间的随机数字;
+            function randomNum(){
+              return Math.ceil(Math.random() * 4);
+            }
+          },
+          demonstrate : function (){
+            var index = 0;
+            var level = this.currentLevel;
+            var self = this;
+            this.intervalId = $interval(function(){
+              var block = vm.blocks[level[index]-1];
+              if(!block){
+                $interval.cancel(vm.game.intervalId);
+                self.failDelayId = $timeout(function(){
+                  self.gamerHand = false;
+                  self.isOver = true;
+                  vm.errorSound.short(1000);
+                },5000)
+                self.gamerHand = true;
+                return ;
+              }
+              block.flash();
+              index +=1;
+            },1000)
+          },
+          isCorrect : function (block){
+            var self = this;
+            if(!this.gamerHand){
+              return '';
+            }
+            $timeout.cancel(this.failDelayId);
+            var curNum = this.currentLevel[this.currentIndex];
+            if(block.num !== curNum){
+              this.gamerHand = false;
+              vm.errorSound.short(1000);
+              block.flash('', true);
+              $timeout(function(){
+                block.flash('', true);
+              },1000)
+              if(!this.isStrict){
+                this.currentIndex = 0;
+                $timeout(function(){
+                  self.demonstrate();
+                },2000);
+                return ;
+              }
+              this.isOver = true;
+              this.hightscore = this.score > this.hightscore? this.score : this.hightscore;
+              return ;
+            }
+            block.flash();
+            this.currentIndex +=1;
+            if(this.currentIndex === this.tabLength){
+              this.score += this.tabLength;
+              this.hightscore = this.score > this.hightscore? this.score : this.hightscore;
+              if(this.tabLength === 20){
+                this.isWin = true;
+                return ;
+              }
+              this.createNewLevel();
+              $timeout(function(){
+                self.demonstrate();
+              },2000)
+            }
+          },
+          reset : function(){
+            this.isWin = false;
+            this.tabLength = 0;
+            this.score = 0;
+            this.currentIndex = 0;
+            this.gamerHand = false;
+            this.isOver = false;
+            this.currentLevel = [];
+            $interval.cancel(this.intervalId);
+          },
+          start: function(){
+            this.reset();
+            this.createNewLevel();
+            this.demonstrate();
+          }
+        }
+       
+        init();
+        
+      }
+      
+    })();
+    
+  </script>
+
+</html>

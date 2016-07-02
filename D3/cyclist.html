@@ -1,0 +1,203 @@
+<html>
+<meta charset="UTF-8">
+
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+
+<style>
+  body{
+    background: url('http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/86416968.jpg') repeat fixed;
+  }
+
+  h2{
+    margin-left: 50px;
+    text-shadow: 1px 1px 1px #888;
+  }
+  .jumbotron{
+    background: rgba(255,255,255,0)
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: cadetblue;
+    shape-rendering: crispEdges;
+    box-shadow: 1px 1px 1px #888;
+  }
+
+  .axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+
+  .pover{
+    width: 250px;
+    height: 200px;
+    color: white;
+    border-radius: 5px;
+    padding: 15px 10px;
+    background-color: rgba(0,0,0,0.6);
+  }
+
+  .text{
+    color: teal;
+    text-shadow: 1px 1px 1px #888;
+  }
+
+  .node{
+    cursor: pointer;
+  }
+
+  .tick text{
+    font-size: 16px;
+    text-shadow: 1px 1px 1px #888;
+  }
+</style>
+
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h2>Free Code Camp Zipline</h2>
+      <div class="report"></div>
+    </div>
+  </div>
+</body>
+
+<script>
+  var url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/cyclist-data.json';
+
+  $.get(url,function(res){
+    var data = JSON.parse(res);
+    init(data);
+  })
+
+  function init(data){
+    var w = 900;
+    var h = 600;
+    var padding = 50;
+    var hoverColor = 'aquamarine';
+
+    var min = d3.min(data, function(d) { return d.Seconds; });
+    var max = d3.max(data, function(d) { return d.Seconds; });
+
+    data = data.map(function(obj){
+      obj.Seconds = Math.abs(min - obj.Seconds);
+      return obj;
+    })
+    
+    min = d3.min(data, function(d) { return d.Seconds; });
+    max = d3.max(data, function(d) { return d.Seconds; });
+
+    var x = d3.scale
+              .linear()
+              .domain([max + 10,min])
+              .range([padding, w - padding - 100]);
+    var y = d3.scale
+              .linear()
+              .domain([data.length + 2, 1])
+              .range([h - padding, padding]);
+
+    var svg = d3.select('.report')
+                .append('svg')
+                .attr('width', w)
+                .attr('height', h);
+
+    svg.selectAll('circle')
+       .data(data)
+       .enter()
+       .append('circle')
+       .attr('class', 'node')
+       .attr('cx', function(d) {
+            return x(d.Seconds);
+       })
+       .attr('cy', function(d) {
+            return y(d.Place);
+       })
+       .attr('r', function(d) {
+            return 4;
+       })
+       .attr('fill', function(d) {
+         if(!d.Doping){
+           return 'gray';
+         }else{
+           return 'red';
+         }
+       })
+      .on('mousemove',function(d,i){
+        var event = window.event;
+          d3.select(this).attr("fill", hoverColor);
+          var el = $('<div>' +
+                        '<div>Name:' + d.Name + '</div>' +
+                        '<div>Nationality:' + d.Nationality + '</div>' +
+                        '<div>Place:' + d.Place + '</div>' +
+                        '<div>Doping:'+ (d.Doping || 'No Doping') + '</div>' +
+                      '</div>');
+          el.css({
+            display: 'inline-block',
+            position: 'absolute',
+            left: (event.clientX + 2) + 'px',
+            top: (event.clientY + 2) + 'px',
+          })
+          el.addClass('pover');
+          $('.pover').remove();
+          $('body').append(el);
+        })
+        .on('mouseout',function(d,i){
+          d3.select(this).attr("fill",d.Doping? 'red' : 'gray');
+          $('.pover').remove();
+        })
+
+    svg.selectAll('text')
+       .data(data)
+       .enter()
+       .append('text')
+       .text(function(d) {
+            return d.Name;
+       })
+       .attr('class', 'text')
+       .attr('x', function(d) {
+            return x(d.Seconds) + 10;
+       })
+       .attr('y', function(d) {
+            return y(d.Place) + 6;
+       })
+       .attr('font-family', 'sans-serif')
+       .attr('fill', 'black');
+
+    // 此段引用了官方的方法;
+    var formatMinutes = function(d) {
+      var t = new Date(2016, 0, 0, 0, d);
+      t.setSeconds(d);
+      return d3.time.format('%H:%M')(t);
+    };
+
+    var xAxis = d3.svg
+                  .axis()
+                  .scale(x)
+                  .orient('bottom')
+                  .ticks(8)
+                  .tickFormat(formatMinutes);
+
+    var yAxis = d3.svg
+                  .axis()
+                  .scale(y)
+                  .orient('left')
+                  .ticks(8);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', 'translate(0,' + (h - padding) + ')')
+        .call(xAxis);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', 'translate(' + padding + ',0)')
+        .call(yAxis);
+      }
+</script>
+
+</html>

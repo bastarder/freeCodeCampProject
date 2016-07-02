@@ -1,0 +1,554 @@
+<html>
+<meta charset="UTF-8">
+
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+
+<style>
+  body{
+    background: aquamarine;
+  }
+
+  .jumbotron{
+    background: rgba(255,255,255,0)
+  }
+
+  svg{
+    cursor: pointer;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: cadetblue;
+    shape-rendering: crispEdges;
+  }
+
+  .axis-none path, .axis-none line {
+    fill:none;
+  }
+
+  .axis text , .axis-none text{
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+
+  .has-img{
+    display: inline-block;
+  }
+
+  .pover{
+    padding: 15px 10px;
+    width: 250px;
+    height: 190px;
+    border: 3px solid rgb(31, 119, 180);
+    border-radius: 5px;
+    background-color: white;
+    text-shadow: 2px 2px 2px #888;
+  }
+
+  .logo{
+    display: inline-block;
+    width: 90px;
+    height: 90px;
+    background-color: gray;
+    box-shadow: 2px 2px 2px #888;
+  }
+</style>
+
+<body></body>
+
+<script type="text/javascript">
+
+  var origin = {
+          "campers": [{
+              "author": {
+                          "username" : "KMT",
+                          "picture": "http://aretheyoldenough.com/wp-content/uploads/2014/12/dora-the-explorer.jpg"
+                        },
+              "link": "https://kristenmthayer.wordpress.com/2016/05/04/projects-projects-and-more-projects-free-code-camp-certificates/"
+          },
+          {
+              "author": {
+                          "username" : "Mary",
+                          "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy-2.jpg"
+                        },
+              "link": "https://github.com/mproject"
+          },
+          {
+              "author": {
+                         "username": "Takumar",
+      "picture": "https://avatars.githubusercontent.com/u/2951935?v=3"
+                            },
+                  "link": "https://www.freecodecamp.com/r/FreeCodeCamp/"
+              },
+            {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy -2.jpg"
+                            },
+                  "link": "https://www.github.com/anothermproject"
+              },
+        {
+                  "author": {
+                              "username": "SaintPeter",
+      "picture": "https://avatars.githubusercontent.com/u/553494?v=3"
+                            },
+                  "link": "https://www.wired.com/r/FreeCodeCamp/"
+              },
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy -2.jpg"
+                            },
+                  "link": "https://twitter.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "SaintPeter",
+      "picture": "https://avatars.githubusercontent.com/u/553494?v=3"
+                            },
+                  "link": "https://twitter.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy-2.jpg"
+                            },
+                  "link": "https://kristenmthayer.wordpress.com/2016/05/04/projects-projects-and-more-projects-free-code-camp-certificates/"
+              },
+              {
+                  "author": {
+                            "username": "Takumar",
+      "picture": "https://avatars.githubusercontent.com/u/2951935?v=3"
+                            },
+                  "link": "https://www.gmsarena.com/r/FreeCodeCamp/"
+              },
+            {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy -2.jpg"
+                            },
+                  "link": "https://www.reddit.com/r/FreeCodeCamp/"
+              },
+        {
+                  "author": {
+                              "username": "SaintPeter",
+      "picture": "https://avatars.githubusercontent.com/u/553494?v=3"
+                            },
+                  "link": "https://www.reddit.com/r/FreeCodeCamp/"
+              },
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy -2.jpg"
+                            },
+                  "link": "https://twitter.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "SaintPeter",
+      "picture": "https://avatars.githubusercontent.com/u/553494?v=3"
+                            },
+                  "link": "https://twitter.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "abhisekp",
+      "picture": "https://avatars.githubusercontent.com/u/1029200?v=3"
+                            },
+                  "link": "https://twitter.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "abhisekp",
+      "picture": "https://avatars.githubusercontent.com/u/1029200?v=3"
+                            },
+                  "link": "https://reddit.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "abhisekp",
+      "picture": "https://avatars.githubusercontent.com/u/1029200?v=3"
+                            },
+                  "link": "https://myspace.com/FreeCodeCamp"
+              },
+        {
+                  "author": {
+                              "username": "EllieAdam",
+      "picture": "https://avatars.githubusercontent.com/u/7389754?v=3"
+                            },
+                  "link": "http://www.ebizmba.com/articles/gadget-websites"
+              },
+        {
+                  "author": {
+                              "username": "EllieAdam",
+      "picture": "https://avatars.githubusercontent.com/u/7389754?v=3"
+                            },
+                  "link": "http://webtoptenz.com/top-10-tech-news-websites/"
+      },
+          {
+                    "author": {
+                              "username": "h4r1m4u",
+      "picture": "https://avatars.githubusercontent.com/u/4771847?v=3"
+                            },
+                  "link": "https://www.yahoo.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://reddit.com/the-world-s-largest-solar-plant-just-torched-itself-1777767880"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://wordpress.com/the-world-s-largest-solar-plant-just-torched-itself-1777767880"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://gizmodo.com/the-world-s-largest-solar-plant-just-torched-itself-1777767880"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://github.com/agproject"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://google.com/the-world-s-largest-solar-plant-just-torched-itself-1777767880"
+              },
+        {
+                    "author": {
+                              "username": "anthonygallina1",
+      "picture": "https://avatars.githubusercontent.com/u/11003055?v=3"
+                            },
+                  "link": "http://twitter.com/the-world-s-largest-solar-plant-just-torched-itself-1777767880"
+              },
+        {
+                    "author": {
+                            "username": "HermanFassett",
+      "picture": "https://avatars.githubusercontent.com/u/12920275?v=3"
+                            },
+                  "link": "http://www.theverge.com/2016/5/20/11720876/google-soli-smart-watch-radar-atap-io-2016"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.google.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.reddit.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.myblog.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.google.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.reddit.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.freecodecamp.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "https://avatars.githubusercontent.com/u/9335367?v=3"
+                            },
+                  "link": "https://www.techrepublic.com/tech"
+              },
+        {
+                    "author": {
+                              "username": "Masd925",
+      "picture": "http://media.coindesk.com/2013/11/Anonymous-man.jpg"
+                            },
+                  "link": "https://www.gizmag.com/tech"
+              },
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy-2.jpg"
+                            },
+                  "link": "https://marywrites.wordpress.com"
+              },
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy-2.jpg"
+                            },
+                  "link": "https://marywrites.wordpress.com/about"
+              },
+        {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.techhub.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.cnet.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.imore.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+        {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.facebook.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.linkedin.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.gizmodo.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "storbeck",
+      "picture": "https://avatars.githubusercontent.com/u/449874?v=3"
+                            },
+                  "link": "http://www.reddit.com"
+              },
+
+        {
+                  "author": {
+                              "username" : "Mary",
+                              "picture": "http://cdn1-www.dogtime.com/assets/uploads/gallery/30-impossibly-cute-puppies/impossibly-cute-puppy-2.jpg"
+                            },
+                  "link": "https://reddit.com/2016/05/04/projects-projects-and-more-projects-free-code-camp-certificates/"
+              },
+        {
+                  "author": {
+                            "username": "mutantspore",
+      "picture": "https://avatars.githubusercontent.com/u/13058496?v=3"
+                            },
+                  "link": "http://www.facebook.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "mutantspore",
+      "picture": "https://avatars.githubusercontent.com/u/13058496?v=3"
+                            },
+                  "link": "http://www.linkedin.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "ArielLeslie",
+      "picture": "https://avatars.githubusercontent.com/u/6234475?v=3"
+                            },
+                  "link": "http://www.geek.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "ArielLeslie",
+      "picture": "https://avatars.githubusercontent.com/u/6234475?v=3"
+                            },
+                  "link": "http://www.geeksforgeeks.org/about/interview-corner/"
+              },
+
+        {
+                  "author": {
+                              "username": "ArielLeslie",
+      "picture": "https://avatars.githubusercontent.com/u/6234475?v=3"
+                            },
+                  "link": "http://www.geeksforgeeks.org/about/interview-corner/"
+              },
+            {
+                  "author": {
+                              "username": "duttakapil",
+      "img": "https://avatars.githubusercontent.com/u/6577624?v=3"
+                            },
+                  "link": "http://www.geek.com/2016/05/apples-revamped-sf-store-showcases-jony-ives-design-vision/"
+              },
+          {
+                  "author": {
+                              "username": "duttakapil",
+      "picture": "https://avatars.githubusercontent.com/u/6577624?v=3"
+                            },
+                  "link": "http://www.geeksforgeeks.org/about/interview-corner/"
+              },
+
+        {
+                  "author": {
+                              "username": "BKinahan",
+      "picture": "https://avatars.githubusercontent.com/u/15965601?v=3"
+                            },
+                  "link": "http://www.geeksforgeeks.org/about/interview-corner/"
+              }
+
+
+
+        ]
+          }
+
+  // 注 : 静态数据来自官方实例;
+  var links = origin.campers;
+  var nodes = {};
+  var width = 1200;
+  var height = 600;
+  var colors=d3.scale.category20();
+
+  var links = _.map(links,function(obj){
+      var split = obj.link.match(/^https:\/\/([^\/]+)(\/|$)|^http:\/\/([^\/]+)(\/|$)/);
+      obj.target = split[1] || split[3];
+      obj.source = obj.author.username;
+      return obj;
+  });
+
+  _.each(links, function(link) {
+    if(nodes[link.source]){
+      link.source = nodes[link.source]
+    }else{
+      link.source = nodes[link.source] = {
+        name: link.source,
+        img : link.author.picture
+      }
+    }
+    if(!nodes[link.target]){
+      nodes[link.target] = {name: link.target}
+    }
+    link.target = nodes[link.target];
+  });
+
+  var force = d3.layout
+                .force()
+                .nodes(d3.values(nodes))
+                .links(links)
+                .size([width, height])
+                .linkDistance(60)
+                .charge(-240)
+                .on("tick", tick)
+                .start();
+
+  var svg = d3.select(".main")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height);
+
+  var link = svg.selectAll(".link")
+                .data(force.links())
+                .enter()
+                .append("line")
+                .attr("class", "link")
+                .style("stroke",'rgb(31, 119, 180)')
+                .style("stroke-width",2)
+
+  var node = svg.selectAll(".node")
+                .data(force.nodes())
+                .enter()
+                .append("g")
+                .call(force.drag);  //拖动
+
+  node.append("circle")
+      .attr("r", function(d) {     // 圆半径
+        return d.img ? Math.log(d.weight) * 15 : 10;
+      })
+      .style("fill", function(d) { // 圆颜色
+        return d.img ? 'yellow' : 'rgb(31, 119, 180)';
+      })
+      .on('mousemove', function(d,i) {
+        if(!d.img){
+          return ;
+        }
+        var event = window.event;
+          console.log(d)
+          var el = $('<div>' +
+                        '<img class="logo" src="' + d.img + '"/>' +
+                        '<h2>' + d.name + '</h2>' +
+                      '</div>');
+          el.css({
+            display: 'inline-block',
+            position: 'absolute',
+            left: (event.clientX + 2) + 'px',
+            top: (event.clientY + 2) + 'px',
+          })
+          el.addClass('pover');
+          $('.pover').remove();
+          $('body').append(el);
+        })
+        .on('mouseout',function(d,i){
+          $('.pover').remove();
+        })
+
+  // 此段代码参考网络中教程;
+  function tick() {
+    link
+      .attr("x1", function(d) {
+        return d.source.x;
+      })
+      .attr("y1", function(d) {
+        return d.source.y;
+      })
+      .attr("x2", function(d) {
+        return d.target.x;
+      })
+      .attr("y2", function(d) {
+        return d.target.y;
+      });
+    node
+      .attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+  }
+
+
+</script>
+
+</html>

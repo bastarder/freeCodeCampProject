@@ -1,0 +1,142 @@
+<html>
+<meta charset="UTF-8">
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src = "https://cdn.wilddog.com/js/client/current/wilddog.js" ></script>
+  
+<style>
+  .wall{
+    border: 1px solid #eeeeee;
+    margin: 10px 0px;
+    border: 2px solid #eeeeee;
+    border-radius: 4px;
+    height: 500px;
+    position:relative;
+  }
+  .input-group-addon{
+    border-left: none;
+    cursor: pointer;
+  }
+  .input-group-addon:hover{
+    background: white;
+    color: #555;
+  }
+</style>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="wall">
+        
+      </div>
+      <div class="btn-list">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="尽情的吐槽吧!">
+          <span class="input-group-addon" onclick="send()">发送</span>
+          <span class="input-group-addon" onclick="del()">清空</span>
+        </div>
+      </div>
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+<script>
+  var ref = new Wilddog("https://danmu-app.wilddogio.com");
+  var _wall = $('.wall');   // 墙壁
+  var _input = $('input');  // 输入框
+  
+  function send(){
+    
+    if(!_input.val()){
+      return ;
+    }
+    
+    var danmu = $('<span class="danmu">' + _input.val() + '</span>');
+
+    var font_size = Number(Math.random() * 20 + 14);
+
+    var color = [
+      Number((Math.random() * 255).toFixed(0)),
+      Number((Math.random() * 255).toFixed(0)),
+      Number((Math.random() * 255).toFixed(0)),
+    ]
+    
+    danmu.css({
+      display : 'none',
+      'font-size': font_size,
+      color: 'rgb('+color[0]+','+color[1]+','+color[2]+')'
+    })
+    
+    $('body').append(danmu);
+    
+    var top = Number((Math.random() * (490 - danmu.height())).toFixed(0));
+    var left = _wall.width() - danmu.width() - 10;
+    
+    danmu.remove();
+    
+    var el = {
+      text : _input.val(),
+      css:{
+        position: 'absolute',
+        left: left,
+        top: top,
+        color: 'rgb('+color[0]+','+color[1]+','+color[2]+')',
+        'font-size': font_size
+      }
+    }
+
+    setValue(el);
+
+  }
+  
+  ref.child("danmu").on("value", function(datasnapshot,error) {
+    if (error == null) {
+      console.log(datasnapshot.val());   // 结果会在 console 中打印出 "beijing"
+    }
+    
+    if(error){
+      return ;  
+    }
+    
+    var ele = datasnapshot.val();
+    var danmu = $('<span class="danmu">' + ele.text + '</span>');
+    
+    danmu.css(ele.css);
+    
+    _wall.append(danmu);
+    
+    setInterval(function(){
+      var left = danmu.css('left').match(/^(\d+)px$/);
+      if(!left || !left[1]){
+        return ;
+      }
+      left = left[1];
+      if(left - 4 <= 0){
+        danmu.remove();
+      };
+      danmu.css('left',left - 4);
+    },50)
+    
+  });
+  
+  // 设置值;
+  function setValue(value){
+    ref.child('danmu').set(value);
+  }
+  
+  function del(){
+    $('.danmu').remove();
+  }
+
+</script>
+
+</html>

@@ -1,0 +1,110 @@
+var ReportView = React.createClass({
+  getInitialState: function(){
+    return {
+      users: [],
+      sort: 'recent'  //'allTime'
+    }
+  },
+  getData: function() {
+    $.ajax({
+      url: this.props.api,
+      dataType: 'json', 
+      cache: false,
+      success: function(data) {
+        this.setState({ 
+          users: data 
+        });
+      }.bind(this)
+    })
+  },
+  sortUser: function(type, ele){
+    // 为什么这里的值是倒过来的????
+    var users = this.state.users.sort(function(a, b){
+      var a = type === 'recent' ? a.recent : a.alltime;
+      var b = type === 'recent' ? b.recent : b.alltime;
+      return b-a;
+    })
+    this.setState({
+      users: users
+    });
+    $(this.refs.recent).removeClass('choice')
+    $(this.refs.allTime).removeClass('choice')
+    $(this.refs[type]).addClass('choice');
+  },
+  componentDidMount : function(){
+    this.getData();
+  },
+  render: function () {
+    return (
+      <div>
+        <table className="table table-bordered">
+          <tr>
+            <th>序号</th>
+            <th>网名</th>
+            <th ref="recent" className="choice" onClick={this.sortUser.bind(this, 'recent')}>
+              30天内分数&nbsp;&nbsp;
+              <span className="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+            </th>
+            <th ref="allTime" onClick={this.sortUser.bind(this, 'allTime')}>
+              总分数&nbsp;&nbsp;
+              <span className="glyphicon glyphicon-chevron-down"></span>
+            </th>
+          </tr>
+          <ReportTable users={this.state.users}></ReportTable>
+        </table>
+        
+      </div>
+    );
+  }
+})
+
+var ReportTable = React.createClass({
+  render : function(){
+    var users = this.props.users.map(function(user, index){
+      return (
+        <tr>
+          <td>{index + 1}</td>
+          <td>
+            <img className="logo" src={user.img} />
+            <a href={"http://www.freecodecamp.com/"+user.username} target="_blank">{user.username}</a>
+          </td>
+          <td>{user.recent}</td>
+          <td>{user.alltime}</td>
+        </tr>
+      )
+    })
+    return (
+      <tbody>{users}</tbody>
+    )
+  }
+});
+
+React.render(<ReportView api="http://fcctop100.herokuapp.com/api/fccusers/top/recent"/>, document.getElementById("main"));
+
+
+/*此处没有使用sass是因为,使用sass无效,小人不才,暂时无法解决先用CSS代替*/
+
+.choice .glyphicon{
+  display:inline-block;
+}
+
+.glyphicon{
+  display:none;
+}
+
+.logo{
+  width:30px;
+  height:30px;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+  
+
+<div id="main"></div>
+
+
+//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js
+
+//cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react.min.js
+
+//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js

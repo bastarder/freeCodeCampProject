@@ -1,0 +1,459 @@
+<html>
+<meta charset="UTF-8">
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css">
+<style>
+  body{
+    color: #333;
+  }
+  .wrapper{
+    max-width: 1250px;
+    margin: 0 auto;
+    min-height: 100%;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    position: relative;
+    font-family: monospace;
+  }
+
+  body{
+    background: url('http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/86416968.jpg') repeat fixed;
+  }
+
+  .main-nav{
+    background-color: rgba(255,255,255,0.9);
+    height: 60px;
+    position: fixed;
+    width: 1250px;
+    z-index: 1;
+    text-decoration: none;
+  }
+
+  .main-nav>li{
+    display: inline-block;
+  }
+
+  .main-nav .nav-item{
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    color: black;
+    line-height: 60px;
+    font-size: 18px;
+    width: 120px;
+    text-align: center;
+    transition: background 0.4s ease 0s;
+  }
+
+  .main-nav .nav-item:hover , .main-nav .nav-item.active{
+    background-color: #eee;
+    color: #333;
+    transition: background 0.4s ease 0s;
+  }
+
+  .main{
+    position: relative;
+    padding: 0px;
+    margin: 0px;
+    margin-top: 60px;
+    overflow: scroll;
+    padding: 0px 15px 0px 15px;
+  }
+
+  .carousel-inner img{
+    display: inline-block;
+    width: 350px;
+  }
+
+  .carousel-inner{
+    height: 100%;
+  }
+  .carousel-control.left,.carousel-control.right{
+    background-image: none;
+  }
+  .panel{
+    border-radius: 0px;
+    box-shadow: none;
+  }
+  .block{
+    padding: 10px;
+    border-top: 4px solid #5bc0de;
+    background: white;
+    margin-bottom: 10px;
+    height: 350px;
+    margin-bottom: 10px;
+  }
+
+  .block .col-xs-4{
+    padding: 0px;
+  }
+
+  .block .col-xs-8{
+    padding-left: 0px;
+  }
+
+  .block .padL10{
+    padding-left: 10px;
+  }
+
+  #gaishu{
+    height: 325px;
+  }
+
+  .thumbnail .demon{
+    height: 198px;
+    width: 100%;
+  }
+  .thumbnail p{
+    height: 40px;
+  }
+  .thumbnail{
+    background: snow;
+    border-radius: 0px;
+    box-shadow: none;
+  }
+  .panel .panel-heading{
+    background-image: none;
+    background-color: white;
+  }
+
+  .panel-body li{
+    margin-bottom: 12px;
+  }
+
+  .color-block{
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+  }
+
+  .clock{
+    display: inline-block;
+    height: 200px;
+    width:200px;
+    border: 2px solid #eee;
+    border-radius: 50%;
+    overflow: hidden;
+    position: absolute;
+    z-index: 2;
+  }
+  .clock .time{
+    position: relative;
+    top: 80px;
+    left: 56px;
+    font-size: 28px;
+    text-align: center;
+  }
+  .clock .per{
+    display: inline-block;
+    position: absolute;
+    width: 200px;
+    height: 60px;
+    background: #337ab7;
+    left: 0;
+    bottom: 0;
+  }
+</style>
+
+<body>
+    <div class="wrapper"  style="height: 100%; overflow: scroll !important;">
+      <ul class="main-nav">
+        <li>
+          <a class="nav-item" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">联系我</a>
+          <ul class="dropdown-menu">
+            <li><a href="https://github.com/bastarders"><i class="fa fa-github fa-fw"></i> GitHub</a></li>
+            <li><a href="https://twitter.com/bastarders"><i class="fa fa-twitter fa-fw"></i> Twitter</a></li>
+            <li><a href="https://www.linkedin.com/in/bastarders"><i class="fa fa-linkedin fa-fw"></i> Linkedin</a></li>
+            <li><a href="https://freecodecamp.cn/bastarder"><i class="fa fa-fire fa-fw"></i> freeCodeCamp</a></li>
+          </ul>
+        </li>
+        <li><a class="nav-item" href="#gaishu">概述</a></li>
+        <li><a class="nav-item" href="#danmu">弹幕游戏</a></li>
+        <li><a class="nav-item" href="#tic">井字棋</a></li>
+        <li><a class="nav-item" href="#msg">名言警句</a></li>
+        <li><a class="nav-item" href="#simon">赛蒙游戏</a></li>
+        <li><a class="nav-item" href="#fanqie">番茄工作法</a></lidiv>
+      </ul>
+      <div class="row">
+        <div class="col-xs-12 main">
+          <div class="block" id="gaishu">
+            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" style="background:white;">
+              <!-- Indicators -->
+              <ol class="carousel-indicators">
+                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="3"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="4"></li>
+                <li data-target="#carousel-example-generic" data-slide-to="5"></li>
+              </ol>
+
+              <!-- Wrapper for slides -->
+              <div class="carousel-inner" role="listbox">
+                <div class="item active">
+                  <img class="center-block" src="http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/41931561.jpg" alt="弹幕游戏">
+                  <div class="carousel-caption">
+                    弹幕游戏
+                  </div>
+                </div>
+                <div class="item">
+                  <img class="center-block" src="http://ww3.sinaimg.cn/large/74311666jw1f4utqputawj20fi0e6gm3.jpg" alt="番茄">
+                  <div class="carousel-caption">
+                    番茄工作法
+                  </div>
+                </div>
+                <div class="item">
+                  <img class="center-block" src="http://ww2.sinaimg.cn/large/74311666jw1f4utqe9ae4j20hb0g7ab7.jpg" alt="井字棋">
+                  <div class="carousel-caption">
+                    井字棋
+                  </div>
+                </div>
+                <div class="item">
+                  <img class="center-block" src="http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/1427107.jpg" alt="名言警句">
+                  <div class="carousel-caption">
+                    名言警句
+                  </div>
+                </div>
+                <div class="item">
+                  <img class="center-block" src="http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/99796494.jpg" alt="赛蒙游戏">
+                  <div class="carousel-caption">
+                    赛蒙游戏
+                  </div>
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+              </a>
+              <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="block" id="danmu">
+            <div>
+              <div class="col-xs-4">
+                <div class="thumbnail">
+                  <div class="demon" style="padding-top:15px;">
+                    <marquee direction="left" align="bottom" height="30" width="100%" scrollamount="2" scrolldelay="5"  class="text-danger">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;哈哈哈哈</marquee>
+                    <marquee direction="left" align="bottom" height="45" width="100%" scrollamount="2" scrolldelay="1"  class="text-warning">&nbsp;&nbsp;快到碗里来</marquee>
+                    <marquee direction="left" align="bottom" height="50" width="100%" scrollamount="2" scrolldelay="10" class="text-info">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了部落！</marquee>
+                    <marquee direction="left" align="bottom" height="25" width="100%" scrollamount="2" scrolldelay="9"  class="text-success">&nbsp;&nbsp;666666,我只服你</marquee>
+                    <marquee direction="right" align="bottom" height="25" width="100%" scrollamount="2" scrolldelay="9"  class="text-success">我是倒着走的,你们行吗!</marquee>
+                  </div>
+                  <div class="caption">
+                    <h3>弹幕游戏</h3>
+                    <p>玩过bilibili吗? 没错就是那个!</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-8 padL10">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">简介</h3>
+                  </div>
+                  <div class="panel-body">
+                    &nbsp;&nbsp;好像是FCC的第一个Js小任务吧? 刚开始做的时候还有点一头雾水啊! 慢慢慢慢也折腾出来了,虽然不美观,或许还有BUG,但是挺开心的哈哈~
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">游戏功能</h3>
+                  </div>
+                  <div class="panel-body">
+                    <ul>
+                      <li>链接野狗API,可多人同时操作显示数据</li>
+                      <li>随机发送弹幕的颜色,大小</li>
+                      <li>一键屏蔽所有弹幕功能</li>
+                      <li>好吧我实在想不到还有什么,就用这个占一条位置~</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block" id="tic">
+            <div>
+              <div class="col-xs-8">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">简介</h3>
+                  </div>
+                  <div class="panel-body">
+                    &nbsp;&nbsp;恩 ! ! ! , 我是不是做出了一个AI？ 虽然是最简单的, 但是我真的做出了这个游戏, 虽然知道自己肯定赢不了,但是我依旧玩了好久~ 依依不舍~
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">游戏功能</h3>
+                  </div>
+                  <div class="panel-body">
+                    <ul>
+                      <li>比官方实例更开放,可以选择先手后手,X 还是 O;</li>
+                      <li>AI 绝对不会输~绝对不会输~</li>
+                      <li>我跟你赌100元~AI不会输</li>
+                      <li>就这个小游戏, 我在2个人面前装了一手好B!</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-4">
+                <div class="thumbnail">
+                  <div class="demon" style="font-size: 239px;text-align: center;line-height: 220px;">
+                    #
+                  </div>
+                  <div class="caption">
+                    <h3>井字棋</h3>
+                    <p>小时候玩过的那个~那时候或许还不知道这是个不公平的游戏吧? 哈哈</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block" id="msg">
+            <div>
+              <div class="col-xs-4">
+                <div class="thumbnail">
+                  <div class="demon" style="text-align: center;font-family: fantasy;font-size: 34px;padding-top: 74px;">
+                    Failure is the mother of success.
+                  </div>
+                  <div class="caption">
+                    <h3>名言警句</h3>
+                    <p>可以随机刷新出句子,还能分享哦~</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-8 padL10">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">简介</h3>
+                  </div>
+                  <div class="panel-body">
+                    &nbsp;&nbsp;API！ API！ API！ 很厉害啊, 以前觉得分享到QQ空间是很厉害的一个功能, 现在我也能做到了~ 哈哈哈, 还学习到了如何用JQ进行动画效果~
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">游戏功能</h3>
+                  </div>
+                  <div class="panel-body">
+                    <ul>
+                      <li>使用API,获取随机的名言警句~</li>
+                      <li>分享到QQ空间~</li>
+                      <li>分享到QQ</li>
+                      <li>分享到微博~ （ps:原谅我并没有Twitter~）</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block" id="simon">
+            <div>
+              <div class="col-xs-8">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">简介</h3>
+                  </div>
+                  <div class="panel-body">
+                    &nbsp;&nbsp;考研你记忆力的那个? 虽然知道有这么个游戏,但是小时候好像没接触到过? 还是我太年轻?,井字棋下来就属这个最有模有样了~
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">游戏功能</h3>
+                  </div>
+                  <div class="panel-body">
+                    <ul>
+                      <li>有专家和娱乐模式,专家错一次就挂啦~</li>
+                      <li>根据题目要求,20轮为游戏终点~</li>
+                      <li>不要吐槽音效难听~</li>
+                      <li>动画效果我自己给0分~</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-4">
+                <div class="thumbnail">
+                  <div class="demon" style="padding:0px 0px 0px 96px;">
+                    <span class="color-block bg-danger"></span>
+                    <span class="color-block bg-warning"></span>
+                    <span class="color-block bg-primary"></span>
+                    <span class="color-block bg-success"></span>
+                  </div>
+                  <div class="caption">
+                    <h3>赛蒙游戏</h3>
+                    <p>小时候玩的游戏啊~~~听声音,在复述出来那个!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block" id="fanqie">
+            <div>
+              <div class="col-xs-4">
+                <div class="thumbnail">
+                  <div class="demon" style="padding-left:100px;">
+                    <div class="clock">
+                      <span class="time">05:21</span>
+                      <span class="per"></span>
+                    </div>
+                  </div>
+                  <div class="caption">
+                    <h3>番茄工作法</h3>
+                    <p>居然没人听说过这大名鼎鼎的东西? （好吧我自己就没听过！）</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xs-8 padL10">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">简介</h3>
+                  </div>
+                  <div class="panel-body">
+                    &nbsp;&nbsp; 刚开始看实例的时候觉得 那慢慢往上升的动画效果很厉害~,请教了别人才做出来的,还不错吧, 但是感觉样式确实薄弱,有时间一定多多练习;
+                  </div>
+                </div>
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">游戏功能</h3>
+                  </div>
+                  <div class="panel-body">
+                    <ul>
+                      <li>自定义工作时间</li>
+                      <li>自定义休息时间</li>
+                      <li>暂停 & 开始</li>
+                      <li>进度的显示~~~~ ||||||||||||||...99%</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div> 
+    </div>
+      <!--<footer class="text-center">
+        <p>Written and coded by 
+          <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+          </a>.</p>
+      </footer> -->
+</body>
+
+<script>
+
+</script>
+
+</html>

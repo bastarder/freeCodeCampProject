@@ -1,0 +1,320 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css">
+  <style>
+    
+   .block{
+     height: 156px;
+     line-height: 156px;
+     font-size: 146px;
+     text-align: center;
+   }
+   
+   .block-table .col-xs-4{
+     padding: 0px;
+   }
+   
+   .block-table{
+    margin-top: 44px;
+    background-color: aliceblue;
+    border-radius: 4px;
+    padding: 18px 0px 10px 0px;
+   }
+   
+   .x-0.y-1,.x-2.y-1{
+     border-left: 5px solid #888;
+     border-right: 5px solid #888;
+   }
+   
+   .x-1.y-1{
+     border: 5px solid #888;
+   }
+   
+   .x-1.y-0,.x-1.y-2{
+     border-top: 5px solid #888;
+     border-bottom: 5px solid #888;
+   }
+   
+   .config-type .item{
+    margin-left: 5px;
+    margin-top: 5px;
+    cursor: pointer;
+    border: 1px solid #eee;
+    display: inline-block;
+    width: 139px;
+    height: 139px;
+    text-align: center; 
+    font-size: 100px;
+   }
+   
+   .config-type i.item{
+     font-size: 132px;
+   }
+   
+   
+   .choice{
+     color: red;
+   }
+   
+   .title i.fa-refresh{
+     color: darkblue;
+     cursor: pointer;
+   }
+   
+   .title{
+     font-size: 18px;
+   }
+   .title i{
+     margin-right: 10px;
+     margin-bottom: 14px;
+   }
+   
+   .form-control{
+     margin: 5px 0px;
+   }
+  </style>
+
+<body ng-app="GamePage" ng-controller="mainCtrl as vm">
+  <div class="container">
+    <div class="row">
+      
+      <div class="col-xs-3">
+      </div>
+      
+      <!-- NAV -->
+      <div class="col-xs-6 block-table">
+        <legend class="col-xs-12 title">
+          <span ng-if="vm.game.gamer === 1">
+            玩家: <i class="fa fa-remove"></i>
+            电脑: <i class="fa fa-circle-o"></i>
+          </span>
+          <span ng-if="vm.game.gamer !== 1">
+            玩家: <i class="fa fa-circle-o"></i>
+            电脑: <i class="fa fa-remove"></i>
+          </span>
+          <i class="fa fa-refresh pull-right" ng-click="vm.init()"></i>
+        </legend>
+        <div class="col-xs-12" ng-repeat="(x,line) in vm.table">
+          <div ng-repeat="(y,value) in line track by $index" class="col-xs-4">
+            <div ng-click="vm.blockClick(x,y)" class="block x-{{x}} y-{{y}}">
+              <i class="fa fa-remove" ng-if="value<0 && vm.game.gamer>0"></i>
+              <i class="fa fa-circle-o" ng-if="value>0 && vm.game.gamer>0"></i>
+              <i class="fa fa-remove" ng-if="value>0 && vm.game.gamer<0"></i>
+              <i class="fa fa-circle-o" ng-if="value<0 && vm.game.gamer<0"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+    
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          
+          <div class="config-type">
+            <div class="item" ng-class="{'choice':vm.game.gamer === 1}" ng-click="vm.game.gamer = 1;">
+              <i class="fa fa-remove"></i>
+            </div>
+            <div class="item" ng-class="{'choice':vm.game.gamer !== 1}" ng-click="vm.game.gamer = -1;">
+              <i class="fa fa-circle-o"></i>
+            </div>
+            <div class="item" ng-class="{'choice':vm.game.isFirst}" ng-click="vm.game.isFirst = true">先</div>
+            <div class="item" ng-class="{'choice':!vm.game.isFirst}" ng-click="vm.game.isFirst = false">后</div>
+            <button class="btn btn-info form-control" ng-click="vm.startGame();">开始游戏</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+  <script>
+    
+    (function(){
+      angular
+      .module('GamePage',[])
+      .controller('mainCtrl',controller);
+      
+      function controller($scope, $window){
+        var vm = this;
+        
+        vm.blockClick = blockClick;
+        vm.init = init;
+        vm.startGame = startGame;
+        vm.isPlaying = false;
+        
+        vm.table = [
+          [0,0,0],
+          [0,0,0],
+          [0,0,0]
+        ];
+
+        vm.game = {
+          step:0,
+          gamer:-1,
+          isFirst:true
+        }
+       
+        init();
+        
+        //////////////////////////////////////
+        
+        function init(){
+          vm.table = [
+            [0,0,0],
+            [0,0,0],
+            [0,0,0]
+          ];
+          vm.game.step = 0;
+          $('.modal').modal({backdrop:'static',keyboard:false});
+        }
+           
+        function startGame(){
+          if(!vm.game.isFirst){
+            AI();
+          }
+          vm.isPlaying = true;
+          $('.modal').modal('hide');
+        }
+        
+        function blockClick(x,y){
+          if(vm.table[x][y] || !vm.isPlaying){
+            return ;
+          }
+          // 玩家行动;
+          vm.table[x][y] = -1;
+          vm.game.step++;
+          var ifWin = win(x,y);
+          if(ifWin){
+            if(ifWin === -1){
+              $window.alert('你赢了!');
+            }else{
+              $window.alert('你输了!');
+            }
+            vm.isPlaying = false;
+            return ;
+          }
+          if(isOver()){
+            $window.alert('平局');
+            vm.isPlaying = false;
+            return ;
+          }
+          // AI行动;
+          var ai = AI();
+          var ifWin = win(ai.x,ai.y);
+          if(ifWin){
+            if(ifWin === -1){
+              $window.alert('你赢了!');
+              vm.isPlaying = false;
+            }else{
+              $window.alert('你输了!');
+              vm.isPlaying = false;
+            }
+            return ;
+          }
+          if(isOver()){
+            $window.alert('平局');
+            return ;
+          }
+        }
+
+        function AI(){
+          var bestStep = getBestStep(true);
+          vm.table[bestStep.x][bestStep.y] = 1;
+          vm.game.step++;
+          return bestStep;
+        }
+        
+        function getBestStep(status){
+          if(status){
+            var width = 1000;
+            var value = 1;
+          }
+          if(!status){
+            var width = -1000;
+            var value = -1;
+          }
+          var best = {
+            x:null,
+            y:null,
+            weight:0
+          };
+          for(var i=0; i<3; i++){
+            for(var j=0; j<3; j++){
+              if(vm.table[i][j] !== 0){
+                continue;
+              }
+              vm.table[i][j] = value;
+              vm.game.step++;
+              // 如果可以胜利;
+              if(win(i,j)){
+                vm.game.step--;
+                vm.table[i][j] = 0;
+                return {x:i,y:j,weight: width};
+              }
+              // 如果结束游戏;
+              if(isOver()){
+                vm.game.step--;
+                vm.table[i][j] = 0;
+                return {x:i,y:j,weight: 0};
+              }
+              // 无法判断,迭代计算
+              var nextWeight = getBestStep(!status).weight;
+              vm.game.step--;
+              vm.table[i][j]=0;
+              if(best.x == null || (nextWeight >= best.weight && width > 0) || (nextWeight <= best.weight && width < 0)){
+                best = {
+                  x:i,
+                  y:j,
+                  weight:nextWeight,
+                }
+              }
+            }
+          }
+          return best;
+        } 
+                  
+        function win(x,y){
+          if(Math.abs(vm.table[x][0]+vm.table[x][1]+vm.table[x][2]) === 3){
+            return vm.table[x][0];
+          }
+          if(Math.abs(vm.table[0][y]+vm.table[1][y]+vm.table[2][y]) === 3){
+            return vm.table[0][y];
+          }
+          if(Math.abs(vm.table[0][0]+vm.table[1][1]+vm.table[2][2]) === 3){
+            return vm.table[0][0];
+          }
+          if(Math.abs(vm.table[2][0]+vm.table[1][1]+vm.table[0][2]) === 3){
+            return vm.table[2][0];
+          }
+          return false;
+        }
+        
+        function isOver(){
+          return vm.game.step >= 9;
+        }
+        
+        
+      }
+      
+    })();
+    
+  </script>
+
+</html>

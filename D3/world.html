@@ -1,0 +1,166 @@
+<html>
+<meta charset="UTF-8">
+
+  <!--<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">-->
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.20/topojson.min.js"></script>
+
+<style>
+  *{
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+  }
+  svg{
+    background: aqua;
+  }
+  .pover{
+    width: 250px;
+    height: 200px;
+    border-radius: 5px;
+    color: white;
+    padding: 15px 10px;
+    background-color: rgba(0, 0, 0, 0.6);;
+  }
+</style>
+
+<body>
+  <div id='main'></div>
+</body>
+
+<script type="text/javascript">
+
+  // 数据接口取自官方实例;
+  d3.json('https://raw.githubusercontent.com/mbostock/topojson/master/examples/world-50m.json', function(worldData) { 
+    d3.json('https://data.nasa.gov/resource/y77d-th95.geojson', function(meteorite) {
+      init(worldData,meteorite)
+    });
+  });
+
+  function init(worldData, meteorite){
+
+    // 不排序将会出现 大的覆盖小的情况;
+    meteorite.features.sort(function(a,b) {
+      return b.properties.mass - a.properties.mass;
+    })
+
+    // 地图的绘制,学习至 http://blog.csdn.net/lzhlzz/article/details/38727993/;
+    var projection = d3.geo
+                       .mercator()
+                       .translate([650,500])
+                       .scale(200);
+
+    var svg = d3.select('#main')
+                .append('svg')
+                .attr('width', '100%')
+                .attr('height', '100%')
+
+    // 计算最大的陨石, 企图生成地图上的圆的大小;
+    // 但是数值浮动太大了, 有知道怎么处理的小伙伴 记得联系我?  QQ:85257684
+    var maxMass = d3.max(meteorite.features, function(d) { 
+      return Number(d.properties.mass); 
+    });
+
+    var minMass = d3.min(meteorite.features, function(d) { 
+      return Number(d.properties.mass); 
+    });
+
+    var path = d3.geo
+                 .path()
+                 .projection(projection);
+
+    // 此段topojson,从官方实例 学习借鉴而来 应该不算抄袭吧!!! 哈哈哈哈;
+    svg.selectAll('path')
+       .data(topojson.feature(worldData, worldData.objects.countries).features)
+       .enter()
+       .append('path')
+       .attr('fill', function(d){
+         // 我大天朝! 别问我怎么知道的!
+         if(d.id === 156){
+           var self = this;
+           setInterval(function(){
+              $(self).animate({
+                  opacity : 0
+                },800,function(){
+                  $(self).animate({
+                    opacity : 1
+                  },400)
+                }); 
+           },1200)
+           return 'red';
+         };
+         var r = Math.floor(Math.random() * 200) + 20;
+         var g = Math.floor(Math.random() * 200) + 20;
+         var b = Math.floor(Math.random() * 200) + 20;
+         var rgb = [r,g,b].join(',');
+         return 'rgba('+rgb+',0.5'+')';
+       })
+       .attr('d', path)
+
+        var rund = d3.scale
+                    .linear()
+                    .domain([minMass,maxMass])
+                    .range([2,50]);
+
+    svg.append('g')
+       .selectAll('path')
+       .data(meteorite.features)
+       .enter()
+       .append('circle')
+       .attr('cx', function(d) { 
+         return projection([d.properties.reclong, d.properties.reclat])[0] 
+        })
+       .attr('cy', function(d) { 
+         return projection([d.properties.reclong, d.properties.reclat])[1] 
+        })
+       .attr('r', function(d) {
+         /* -------怎么做不出官方的效果? 大小之间相差太大了~ 总觉得我这样是错的~ ------ */
+         console.log(rund(d.properties.mass))
+         return rund(d.properties.mass);
+         var per = Number(d.properties.mass) / Number(maxMass);
+         var r = per * 50;
+         if(r<2 && per < 0.9){
+       	   r = r * 30;
+           return r < 2 ? 2: r 
+         }
+         return r;
+         /* ------------------ */
+       })
+       .attr('fill', 'rgba(0,0,0,0.5)')
+       .on('mouseover', function(d) {
+         var event = window.event;
+         $('.pover').remove();
+         var p = d.properties;
+         var el = $('<div>' +
+                       '<div class="year">Fall:' + p.fall + '</div>' +
+                       '<div class="temp">Mass:'  + p.mass + '</div>' +
+                       '<div class="variance">Name: ' + p.name + '</div>' +
+                       '<div class="year">NameType:' + p.nametype + '</div>' +
+                       '<div class="year">Recclass:' + p.recclass + '</div>' +
+                       '<div class="year">Reclat:' + p.reclat + '</div>' +
+                       '<div class="year">Year:' + p.year + '</div>' +
+                     '</div>');
+         el.css({
+           display: 'inline-block',
+           position: 'absolute',
+           left: (event.clientX + 10) + 'px',
+           top: (event.clientY + 5) + 'px',
+         })
+         el.addClass('pover');
+         $('body').append(el);
+       })
+       .on('mouseout', function(d) {
+         $('.pover').remove();
+       });
+
+  }
+
+
+</script>
+
+</html>

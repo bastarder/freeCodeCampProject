@@ -1,0 +1,179 @@
+<html>
+<meta charset="UTF-8">
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<style>
+    .main{
+      width: 500px;
+      height: 486px;
+      background-color: #eff2f5;
+      border-radius: 3px;
+      padding: 10px;
+    }
+
+    .answer{
+      padding: 0px 5px;
+      border: 1px solid #2ebdbc;
+      border-radius: 3px;
+      color: gray;
+      text-align: right;
+      width: 100%;
+      height: 80px;
+      line-height: 80px;
+      font-size: 42px;
+    }
+    
+    .button{
+      border-radius: 3px;
+      width: 117px;
+      height: 72px;
+      margin-top: 5px;
+      line-height: 72px;
+      font-size: 30px;
+      border: 1px solid #2ebdbc;
+      background-color: white;
+      color: #2ebdbc;
+      transition: background 0.4s ease 0s;
+    }
+    
+    .button:hover{
+      border: 1px solid #2ebdbc;
+      background-color: #2ebdbc;
+      color: white;
+      transition: background 0.4s ease 0s;
+    }
+    
+</style>
+
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <div class="row">
+         <div class="main center-block">
+           <input class="answer" type="text" />
+           <button class="button" value="AC">AC</button>
+           <button class="button" value="CE">CE</button>
+           <button class="button" value="%">%</button>
+           <button class="button" value="/">/</button>
+           <button class="button" value="7">7</button>
+           <button class="button" value="8">8</button>
+           <button class="button" value="9">9</button>
+           <button class="button" value="*">*</button>
+           <button class="button" value="4">4</button>
+           <button class="button" value="5">5</button>
+           <button class="button" value="6">6</button>
+           <button class="button" value="-">-</button>
+           <button class="button" value="1">1</button>
+           <button class="button" value="2">2</button>
+           <button class="button" value="3">3</button>
+           <button class="button" value="+">+</button>
+           <button class="button" value=".">.</button>
+           <button class="button" value="0">0</button>
+           <button class="button" value="Ans">Ans</button>
+           <button class="button" value="=">=</button>
+         </div>
+       </div>
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+<script>
+
+  var _normal  = ['0','1','2','3','4','5','6','7','8','9','.','%','/','*','-','+']; // 所有按钮;
+  var _specail = ['%','/','*','-','+']; // 特殊按钮
+  var _answer  = $($('input')[0]);  // 答案框Element
+  var _ans     = '';                // 上一次计算结果
+  var game = new Game();
+  
+  function Game(){
+      // 是否新一轮的计算;
+      this.newStart = true;
+      // 清空
+      this.clearAnswer = function(){
+        _answer.val('');
+      }
+      // 更新值
+      this.setAnswer = function(val){
+        _answer.val(val);
+        return val;
+      }
+      // 得到当前值
+      this.getAnswer = function(){
+        return _answer.val();
+      }
+      // 添加新元素;
+      this.add = function(parm){
+        var val = this.getAnswer() + parm;
+        this.setAnswer(val);
+      }
+   };
+  
+   $('button').on('click', function(){
+    
+    var _action  = $(this).attr('value');
+    
+    // 普通的数字;
+    if(_normal.indexOf(_action) !== -1){
+      // 如果是新一轮的计算,则应把上次的计算结果清空;
+      if(game.newStart){  
+        if(_specail.indexOf(_action) === -1){
+          game.clearAnswer();
+        }
+        game.newStart = false;
+      }
+      game.add(_action);
+      return ;
+    }
+    
+    // 清空
+    if(_action === 'AC'){
+      game.clearAnswer();
+      return ;
+    }
+    
+    // 回退一步
+    if(_action === 'CE'){
+      game.setAnswer(
+        game
+          .getAnswer()
+          .slice(0, -1)
+      );
+      return ;
+    }
+    
+    // 计算结果
+    if(_action === '='){
+      try{
+        _ans = game.setAnswer(
+          eval(game.getAnswer())
+        );
+        game.newStart = true;
+      } catch(error){
+        console.log('错误的式子');
+      }
+      return ;
+    }
+    
+    // 添加上一次的结果
+    if(_action === 'Ans'){
+      if(!game.newStart){
+        game.add(_ans);
+      }
+      return;
+    }
+    
+  })
+
+</script>
+
+</html>

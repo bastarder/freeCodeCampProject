@@ -1,0 +1,514 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/weather-icons/2.0.10/css/weather-icons.min.css">
+  <style>
+    [weather-icon]{
+      display: inline-block;
+    }
+    .big{
+      font-size: 100px;
+    }
+    .main-value{
+      display: block;
+      font-size: 22px;
+    }
+    
+    .mrb20{
+      margin-bottom: 20px;
+    }
+    .item{
+      margin-bottom: 5px;
+      border-left: 5px solid #F7C;
+      padding-left: 15px;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
+      padding: 5px;
+      line-height: 40px;
+    }
+    
+    .item-title{
+      color: black;
+      margin-right: 18px;
+    }
+    
+    .item-value{
+      color: cadetblue;
+    }
+    
+    .one-day{
+      height: 150px;
+      border: 1px solid #eee;
+    }
+    
+    .small{
+      font-size: 42px;
+      margin-bottom: 5px;
+    }
+    
+    .item-mini{
+      margin-bottom: 5px;  
+    }
+    
+    .small .glyphicon-resize-horizontal{
+      font-size: 30px;
+      margin: 0px 6px;
+    }
+    
+    .big .glyphicon-resize-horizontal{
+      font-size: 66px;
+      margin: 0px 16px;
+    }
+    
+    .weather-icon{
+      display: inline-block;
+    }
+    
+    .weather-main{
+      margin-left: 15px;
+      display: inline-block;
+    }
+    
+  </style>
+
+<body ng-app="WeatherApp" ng-controller="mainCtrl as vm">
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12 mrb20">
+        <legend>{{vm.weatherData.today.date_y}} {{vm.weatherData.today.week}} {{vm.cityName}}</legend>
+        <div class="col-xs-12">
+          <div class="weather-icon mrb20">
+            <div weather-icon='vm.weatherData.today.weather_id' class="big"></div>
+          </div>
+          <div class="weather-main">
+            <span class="main-value">{{vm.weatherData.today.temperature}}</span>
+            <span class="main-value">{{vm.weatherData.today.weather}}</span>
+            <span class="main-value">{{vm.weatherData.today.wind}}</span>
+          </div>
+        </div>
+        <div class="col-xs-12">
+          <div class="item" >
+            <span class="item-title">穿衣建议:</span>
+            <span class="item-value">{{vm.weatherData.today.dressing_advice}}</span>
+          </div>
+          <div class="item" >
+            <span class="item-title">穿衣指数:</span>
+            <span class="item-value">{{vm.weatherData.today.dressing_index}}</span>
+          </div>
+          <div class="item" >
+            <span class="item-title">锻炼指数:</span>
+            <span class="item-value">{{vm.weatherData.today.exercise_index}}</span>
+          </div>
+
+          <div class="item" >
+            <span class="item-title">旅游指数:</span>
+            <span class="item-value">{{vm.weatherData.today.travel_index}}</span>
+          </div>
+          <div class="item" >
+            <span class="item-title">洗衣指数:</span>
+            <span class="item-value">{{vm.weatherData.today.wash_index}}</span>
+          </div>
+        </div>
+        
+      </div>
+      <div class="col-xs-12">
+        <legend>未来6天预报</legend>
+        <div class="col-xs-2 one-day" ng-repeat="day in vm.weatherData.future" ng-if="$index !== 0">
+          <div class="item-mini">
+            {{day.date | date2}}({{day.week}})
+          </div>
+          <div class="item-mini">
+            <div weather-icon='day.weather_id' class="small"></div>
+          </div>
+          <div class="item-mini">
+            {{day.weather}}
+          </div>
+          <div class="item-mini">
+            {{day.wind}}
+          </div>
+          <div class="item-mini">
+            {{day.temperature}}
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+  
+  <script>
+    
+    (function(){
+      angular
+      .module('WeatherApp',[])
+      .controller('mainCtrl',controller)
+      .directive('weatherIcon',weatherIcon)
+      .filter('date2',date2);
+      
+      function controller($scope, $http){
+        var vm = this;
+        var api = 'http://v.juhe.cn/weather/index?';
+        // vm.weather = {
+        //     "resultcode": "200",
+        //     "reason": "successed!",
+        //     "result": {
+        //         "sk": {
+        //             "temp": "20",
+        //             "wind_direction": "北风",
+        //             "wind_strength": "2级",
+        //             "humidity": "78%",
+        //             "time": "20:27"
+        //         },
+        //         "today": {
+        //             "temperature": "18℃~23℃",
+        //             "weather": "阴转多云",
+        //             "weather_id": {
+        //                 "fa": "04",
+        //                 "fb": "01"
+        //             },
+        //             "wind": "西北风4-5 级",
+        //             "week": "星期六",
+        //             "city": "苏州",
+        //             "date_y": "2016年06月04日",
+        //             "dressing_index": "较舒适",
+        //             "dressing_advice": "建议着薄外套、开衫牛仔衫裤等服装。年老体弱者应适当添加衣物，宜着夹克衫、薄毛衣等。",
+        //             "uv_index": "最弱",
+        //             "comfort_index": "",
+        //             "wash_index": "较不宜",
+        //             "travel_index": "较适宜",
+        //             "exercise_index": "较适宜",
+        //             "drying_index": ""
+        //         },
+        //         "future": [
+        //             {
+        //                 "temperature": "18℃~23℃",
+        //                 "weather": "阴转多云",
+        //                 "weather_id": {
+        //                     "fa": "02",
+        //                     "fb": "01"
+        //                 },
+        //                 "wind": "西北风4-5 级",
+        //                 "week": "星期六",
+        //                 "date": "20160604"
+        //             },
+        //             {
+        //                 "temperature": "20℃~26℃",
+        //                 "weather": "多云",
+        //                 "weather_id": {
+        //                     "fa": "01",
+        //                     "fb": "01"
+        //                 },
+        //                 "wind": "东南风微风",
+        //                 "week": "星期日",
+        //                 "date": "20160605"
+        //             },
+        //             {
+        //                 "temperature": "21℃~29℃",
+        //                 "weather": "多云转雷阵雨",
+        //                 "weather_id": {
+        //                     "fa": "01",
+        //                     "fb": "04"
+        //                 },
+        //                 "wind": "东南风3-4 级",
+        //                 "week": "星期一",
+        //                 "date": "20160606"
+        //             },
+        //             {
+        //                 "temperature": "21℃~28℃",
+        //                 "weather": "雷阵雨",
+        //                 "weather_id": {
+        //                     "fa": "04",
+        //                     "fb": "04"
+        //                 },
+        //                 "wind": "西北风微风",
+        //                 "week": "星期二",
+        //                 "date": "20160607"
+        //             },
+        //             {
+        //                 "temperature": "20℃~28℃",
+        //                 "weather": "阴转多云",
+        //                 "weather_id": {
+        //                     "fa": "02",
+        //                     "fb": "01"
+        //                 },
+        //                 "wind": "东风微风",
+        //                 "week": "星期三",
+        //                 "date": "20160608"
+        //             },
+        //             {
+        //                 "temperature": "21℃~28℃",
+        //                 "weather": "雷阵雨",
+        //                 "weather_id": {
+        //                     "fa": "04",
+        //                     "fb": "04"
+        //                 },
+        //                 "wind": "西北风微风",
+        //                 "week": "星期四",
+        //                 "date": "20160609"
+        //             },
+        //             {
+        //                 "temperature": "20℃~26℃",
+        //                 "weather": "多云",
+        //                 "weather_id": {
+        //                     "fa": "01",
+        //                     "fb": "01"
+        //                 },
+        //                 "wind": "东南风微风",
+        //                 "week": "星期五",
+        //                 "date": "20160610"
+        //             }
+        //         ]
+        //     },
+        //     "error_code": 0
+        // }
+        // console.log(vm.weather);
+        
+        // vm.weatherData = vm.weather.result;
+        // vm.errorWeather = {
+        //   resultcode: "202", 
+        //   reason: "查询不到该城市的信息", 
+        //   result: null, 
+        //   error_code: 203902
+        // }
+       
+        vm.cityName = '苏州';
+        
+        getWeather();
+        function getWeather(){
+          $http
+            .jsonp(api + 'cityname='+ vm.cityName +'&dtype=json&format=2&key=a2855d7c81456296dcbdbbc9bce547f2&callback=JSON_CALLBACK')
+            .success(function(response){
+              console.log(response);
+              if(!response || !response.result){
+                alert('未查询到天气信息!请重试!');
+                return ;
+              }
+              vm.weatherData = response.result;
+            })
+        }
+
+      }
+      
+      
+      function weatherIcon(){
+        return {
+          template: "<i class='{{code_1}}'></i><span ng-if='code_1 !== code_2' class='glyphicon glyphicon-resize-horizontal' aria-hidden='true'></span><i ng-if='code_1 !== code_2' class='{{code_2}}'></i>",
+          restrict: 'A',
+          link: linker,
+          scope: {
+            code: '=?weatherIcon'
+          }
+        }  
+        
+        function linker(scope){
+
+          var static = [
+            {
+                "wid": "00",
+                "weather": "晴",
+                "icon" : "wi wi-day-sunny"
+            },
+            {
+                "wid": "01",
+                "weather": "多云",
+                "icon" : "wi wi-cloudy"
+            },
+            {
+                "wid": "02",
+                "weather": "阴",
+                "icon" : "wi wi-cloudy"
+            },
+            {
+                "wid": "03",
+                "weather": "阵雨",
+                "icon" : "wi wi-hail "
+            },
+            {
+                "wid": "04",
+                "weather": "雷阵雨",
+                "icon" : "wi wi-thunderstorm"
+            },
+            {
+                "wid": "05",
+                "weather": "雷阵雨伴有冰雹",
+                "icon" : "wi wi-thunderstorm"
+            },
+            {
+                "wid": "06",
+                "weather": "雨夹雪",
+                "icon" : "wi wi-snow"
+            },
+            {
+                "wid": "07",
+                "weather": "小雨",
+                "icon" : "wi wi-sleet"
+            },
+            {
+                "wid": "08",
+                "weather": "中雨",
+                "icon" : "wi wi-rain"
+            },
+            {
+                "wid": "09",
+                "weather": "大雨",
+                "icon" : "wi wi-rain"
+            },
+            {
+                "wid": "10",
+                "weather": "暴雨",
+                "icon" : "wi wi wi-snow"
+            },
+            {
+                "wid": "11",
+                "weather": "大暴雨",
+                "icon" : "wi wi-storm-showers"
+            },
+            {
+                "wid": "12",
+                "weather": "特大暴雨",
+                "icon" : "wi wi-storm-showers"
+            },
+            {
+                "wid": "13",
+                "weather": "阵雪",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "14",
+                "weather": "小雪",
+                "icon" : "wi wi-wu-snow "
+            },
+            {
+                "wid": "15",
+                "weather": "中雪",
+                "icon" : "wi wi-wu-snow "
+            },
+            {
+                "wid": "16",
+                "weather": "大雪",
+                "icon" : "wi wi-wu-snow "
+            },
+            {
+                "wid": "17",
+                "weather": "暴雪",
+                "icon" : "wi wi-wu-snow "
+            },
+            {
+                "wid": "18",
+                "weather": "雾",
+                "icon" : "wi wi-fog"
+            },
+            {
+                "wid": "19",
+                "weather": "冻雨",
+                "icon" : "wi wi-rain-wind"
+            },
+            {
+                "wid": "20",
+                "weather": "沙尘暴",
+                "icon" : "wi wi-fog"
+            },
+            {
+                "wid": "21",
+                "weather": "小雨-中雨",
+                "icon" : "wi wi-wu-rain"
+            },
+            {
+                "wid": "22",
+                "weather": "中雨-大雨",
+                "icon" : "wi wi-wu-rain"
+            },
+            {
+                "wid": "23",
+                "weather": "大雨-暴雨",
+                "icon" : "wi wi-wu-rain"
+            },
+            {
+                "wid": "24",
+                "weather": "暴雨-大暴雨",
+                "icon" : "wi wi-wu-rain"
+            },
+            {
+                "wid": "25",
+                "weather": "大暴雨-特大暴雨",
+                "icon" : "wi wi-wu-rain"
+            },
+            {
+                "wid": "26",
+                "weather": "小雪-中雪",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "27",
+                "weather": "中雪-大雪",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "28",
+                "weather": "大雪-暴雪",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "29",
+                "weather": "浮尘",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "30",
+                "weather": "扬沙",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "31",
+                "weather": "强沙尘暴",
+                "icon" : "wi wi-wu-snow"
+            },
+            {
+                "wid": "53",
+                "weather": "霾",
+                "icon" : "wi wi-wu-snow"
+            }
+          ]
+          
+          scope.$watch('code',function(){
+            if(!scope.code){
+              return ;
+            }
+            scope.code_1 = _.find(static,{wid:scope.code.fa}).icon;
+            scope.code_2 = _.find(static,{wid:scope.code.fb}).icon;
+          },true);
+
+        }
+        
+      }
+      
+      
+      function date2(){
+        
+        return function(input){
+          var exp = /^([\d]{4})([\d]{2})([\d]{2})$/
+          var date = input.match(exp);
+          return date[1] + '年' + date[2] + '月' + date[3] + '日';
+        }
+        
+      }
+      
+      
+    })();
+    
+  </script>
+
+</html>

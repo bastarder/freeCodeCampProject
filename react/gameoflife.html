@@ -1,0 +1,208 @@
+var Game = React.createClass({
+  getInitialState() {
+    let x_len = 30;
+    let y_len = 50;
+    let level = 1;
+    let world = this.init(x_len, y_len);
+    return {
+      world,
+      x_len,
+      y_len,
+      level,
+    }
+  },
+  componentDidMount() {
+    this.start();
+  },
+  stop() {
+    clearInterval(this.start);
+  },
+  start() {
+    this.start = setInterval(()=>{
+      this.next(this.state.world)
+    },200)
+  },
+  next() {
+    // 遍历所有节点;
+    var world = [...this.state.world];
+    var change = [] // 新一轮中需要被改变裁决或庇护的生命;
+    for(var x=0; x<world.length; x++){
+      for(var y=0; y<world[x].length; y++){
+        // 1.获取当前点的所有子节点内的存活生命数量;
+        var life = this.getAroundLife(x,y,world);
+        var death = { x: x, y: y, v: 0,}; // 死亡节点;
+        var alive = { x: x, y: y, v: 1,}; // 幸存节点;
+        // 2.如果存活生命 === 3 , 当前节点 复活,被庇护;
+        if(life === 3){
+          change.push(alive)
+          continue ;
+        }
+        // 3.如果存活生命 === 2 ,不变;
+        if(life === 2){
+          continue ;
+        }
+        // 4.其他情况 , 当前节点被裁决 死亡;
+        change.push(death)
+        continue ;
+      }
+    }
+    // 更新大陆信息（该杀的杀,该保护的保护);
+    _.each(change,function(obj){
+      // 上一轮的状态;
+      var origin = world[obj.x][obj.y];
+      if(origin>0 && obj.v>0){
+        // 如果上一轮,下一轮都存活,则晋级为老油条;
+        world[obj.x][obj.y] = 2;
+      }else{
+        // 否则 仅仅更新状态;
+        world[obj.x][obj.y] = obj.v;
+      }
+    })
+
+    this.setState({
+      world: world,
+      level: this.state.level + 1
+    })
+
+    return world;
+  },
+  reset(){
+    let world = this.init(this.state.x_len, this.state.y_len);
+
+    this.setState({
+      world: world,
+      level: 1,
+    })
+  },
+  clear(){
+    var world = [...this.state.world];
+    for(var x=0; x<this.state.x_len; x++){
+      var line = [];
+      for(var y=0; y<this.state.y_len; y++){
+        world[x][y] = 0;
+      }
+    }
+    this.stop();
+    this.setState({
+      world: world,
+      level: 1,
+    })
+  },
+  lifeClick(x,y,v){
+    var world = [...this.state.world];
+    world[x][y] = 1;
+    this.setState({
+      world: world
+    })
+  },
+  getAroundLife(x,y,world) {
+    var life = 0; // 记录存活生命;
+    for(var i=-1 ;i<=1; i++){
+      for(var j=-1; j<=1; j++){
+        // 如果是本身,则不进行操作;
+        var _x = x+i;
+        var _y = y+j;
+        if(!i && !j){
+          continue ;
+        }
+        // 如果不存在的数据,则不进行操作,如边界;
+        if(_x<0 || _y<0 || _x>this.state.x_len-1 || _y>this.state.y_len-1){
+          continue ;
+        }
+        // 找到存活生命,记录数量;
+        if(world[_x][_y] > 0){
+          life += 1;
+        }
+      }
+    }
+    return life;
+  },
+  init(x_len, y_len) {
+    // 初始化大陆(创造生命)
+    var world = [];
+    for(var x=0; x<x_len; x++){
+      var line = [];
+      for(var y=0; y<y_len; y++){
+        // 有些人天生就高人一等,有些人根本就没有出现的机会;
+        line.push(
+          Math.floor(Math.random() * 2) === 0? 1 : 0
+        )
+      }
+      world.push(line);
+    }
+    return world;
+  },
+  render() {
+    var self = this;
+    var world = self.state.world.map((line,x)=>{
+      var lines = line.map((v,y)=>{
+        return (
+          <div x={x} y={y} v={v} className={'life-'+ v} onClick={self.lifeClick.bind(v,x,y)}></div>
+        )
+      })
+      return (
+        <div className="line">
+          {lines}<br></br>
+        </div>
+      )
+    });
+    return (
+      <div className="game center-block">
+        <h2>公元 {self.state.level} 年</h2>
+        <div className="btn-group">
+          <button className="btn btn-default" onClick={self.start}>时间流动</button>
+          <button className="btn btn-default" onClick={self.stop}>时间静止</button>
+          <button className="btn btn-default" onClick={self.clear}>大清算</button>
+          <button className="btn btn-default" onClick={self.reset}>创造新世纪</button>
+        </div>
+        {world}
+      </div>
+    );
+  }
+})
+
+ReactDOM.render(<Game />, document.getElementById("main"));
+
+
+
+.life-0,.life-1,.life-2
+  border-radius: 50%
+  display: inline-block
+  width: 15px
+  height: 15px
+  margin-left: 2px
+
+.life-1
+  background-color: rgba(0,0,0,0.6)
+
+.life-2
+  background-color: rgba(0,0,0,0.8)
+
+.life-0
+  background-color: #eee
+
+.line
+  padding: 0
+  margin: 0
+
+.game
+  display: inline-block
+  border-radius: 50%
+
+.jumbotron
+  background: white
+  padding-left: 80px
+
+h2
+  text-shadow: 2px 2px 2px gray
+
+.btn-group
+  margin-bottom: 8px
+
+
+
+  <div class="container">
+    <div class="jumbotron" id="main">
+
+    </div>
+  </div>

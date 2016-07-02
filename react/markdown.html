@@ -1,0 +1,55 @@
+var MarkDownView = React.createClass({
+  getInitialState: function(){
+    return {
+      htmlStr : '# Welcome To MarkDown Online\n > white your code ! \n \n > enioy it!'
+    }
+  },
+  transformToMarkDown : function(input){
+      return { 
+        __html: marked(input, { sanitize: true })
+      };
+  },
+  strChanged : function(){
+    this.setState({
+       htmlStr: this.refs.resource.value
+    })
+  },
+  render: function () {
+    return (
+      <div className="mark-down row">
+        <textarea 
+          ref="resource"
+          className="input col-xs-6"
+          defaultValue={this.state.htmlStr} 
+          onChange={this.strChanged} >
+        </textarea>
+        <span className="output col-xs-6" dangerouslySetInnerHTML={this.transformToMarkDown(this.state.htmlStr)}>
+        </span>
+      </div>
+    );
+  }
+})
+
+React.render(<MarkDownView />, document.getElementById("main"));
+
+
+
+
+.mark-down
+  padding: 20px
+  .col-xs-6
+    display: inline-block
+    border: 1px solid #eee
+    height: 600px
+    min-height: 600px
+    max-height: 600px
+    overflow-y: scroll
+  .input
+    border-radius: 5px 0px 0px 5px
+  .output
+    border-left : 0px
+    
+
+
+
+    <div id="main"></div>

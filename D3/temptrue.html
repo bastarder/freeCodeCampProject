@@ -1,0 +1,189 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+
+  <style>
+
+    .jumbotron{
+      background: rgba(255,255,255,0)
+    }
+
+    svg{
+      box-shadow: 1px 2px 3px #888;
+      cursor: pointer;
+    }
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: cadetblue;
+      shape-rendering: crispEdges;
+    }
+
+    .axis-none path, .axis-none line {
+      fill:none;
+    }
+
+    .axis text , .axis-none text{
+      font-family: sans-serif;
+      font-size: 11px;
+    }
+
+    .pover{
+      width: 250px;
+      height: 200px;
+      border-radius: 5px;
+      color: white;
+      padding: 15px 10px;
+      background-color: rgba(0, 0, 0, 0.6);;
+    }
+
+    .pover .year{
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+    .pover .temp{
+      margin-bottom: 10px;
+      font-size: 26px;
+    }
+    .pover .variance{
+      font-size: 15px;
+      color: #eee;
+    }
+
+
+
+    h2{
+      text-shadow: 1px 1px 1px #888;
+      margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <h2>Monthly Global Land-Surface Temperature</h2>
+      <div class="report"></div>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+  var url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
+
+  $.get(url,function(res){
+    var data = JSON.parse(res);
+    console.log('数据返回:',data);
+    init(data);
+  })
+
+  function init(data){
+    var dataList = data.monthlyVariance;
+    var baseTemperature = data.baseTemperature;
+    var w = 900;
+    var h = 600;
+    var padding = 50;
+    var normalColor = 'teal';
+    var hoverColor = 'aquamarine';
+    var maxYear = d3.max(dataList, function(d) { return d.year; });
+    var minYear = d3.min(dataList, function(d) { return d.year; });
+    var minVariance = d3.min(dataList, function(d) { return d.variance; });
+    var maxVariance = d3.max(dataList, function(d) { return d.variance; });
+    var blockW = (w-padding) / (maxYear - minYear);
+    var blockH = (h-padding) / 12;
+
+    var x = d3.scale
+              .linear()
+              .domain([minYear,maxYear + 1])
+              .range([padding, w - padding]);
+
+    var y = d3.scale
+              .linear()
+              .domain([12 + 0.5, 1])
+              .range([h - padding, padding]);
+
+    var svg = d3.select('.report')
+                .append('svg')
+                .attr('width', w)
+                .attr('height', h);
+
+    // 颜色取自官方实例;
+    var colors = ["#5e4fa2", "#3288bd", "#66c2a5", "#abdda4", "#e6f598", "#ffffbf", "#fee08b", "#fdae61", "#f46d43", "#d53e4f", "#9e0142"];
+
+    var colorScale = d3.scale.quantile()
+      .domain([minVariance + baseTemperature, maxVariance + baseTemperature])
+      .range(colors);
+
+    svg.selectAll('text')
+       .data(dataList)
+       .enter()
+       .append('rect')
+       .attr('class', 'node')
+       .attr('x', function(d) { return x(d.year); })
+       .attr('y', function(d) { return y(d.month) - 23; })
+       .attr('width', blockW)
+       .attr('height', blockH)
+       .style('fill', function(d) {
+         return colorScale(d.variance + baseTemperature);
+        })
+       .on('mousemove',function(d,i){
+          var event = window.event;
+          $('.pover').remove();
+          var el = $('<div>' +
+                        '<div class="year">' + d.year + '年-' + d.month + '月</div>' +
+                        '<div class="temp">温度:'  + ((d.variance+baseTemperature).toFixed(2)) + ' °C</div>' +
+                        '<div class="variance">温差: ' + d.variance + ' °C</div>' +
+                      '</div>');
+          el.css({
+            display: 'inline-block',
+            position: 'absolute',
+            left: (event.clientX + 10) + 'px',
+            top: (event.clientY + 5) + 'px',
+          })
+          el.addClass('pover');
+          $('body').append(el);
+        })
+        .on('mouseout',function(d,i){
+          $('.pover').remove();
+        })
+
+    var xAxis = d3.svg
+                  .axis()
+                  .scale(x)
+                  .orient('bottom')
+                  .ticks(15)
+                  .tickFormat(function(d){
+                    return d + '年'
+                  })
+
+    var yAxis = d3.svg
+                  .axis()
+                  .scale(y)
+                  .orient('left')
+                  .ticks(12)
+                  .tickFormat(function(d){ return d+ '月'})
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', 'translate(0,' + (h - padding) + ')')
+        .call(xAxis);
+
+    svg.append('g')
+       .attr('class', 'axis-none')
+       .attr('transform', 'translate(' + padding + ',0)')
+       .call(yAxis);
+  }
+
+
+</script>
+
+</html>

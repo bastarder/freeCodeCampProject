@@ -1,0 +1,149 @@
+<html>
+<meta charset="UTF-8">
+
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/d3/3.4.8/d3.min.js"></script>
+
+<style>
+  body{
+    background: url('http://7xrn7f.com1.z0.glb.clouddn.com/16-6-14/86416968.jpg') repeat fixed;
+  }
+  .jumbotron{
+    background: rgba(255,255,255,0)
+  }
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: cadetblue;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+
+  .pover{
+    width: 150px;
+    height: 65px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: white;
+  }
+
+</style>
+
+<body>
+  <div class="container">
+    <div class="jumbotron">
+      <div class="report"></div>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+  var url = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json';
+
+  $.get(url,function(res){
+    var data = JSON.parse(res);
+    console.log('数据返回:',data);
+    init(data);
+  })
+
+  function init(data){
+    var w = 1000;
+    var h = 600;
+    var padding = 50;
+    var normalColor = 'teal';
+    var hoverColor = 'aquamarine';
+
+    // 数值中的最大值,用于计算各种值~~~~;
+    var max = d3.max(data.data, function(d) { return d[1]; });
+
+    var x = d3.time
+              .scale()
+              .domain([new Date(data.from_date), new Date(data.to_date)])
+              .range([padding, w - padding]);
+    var y = d3.scale
+              .linear()
+              .domain([0, max])
+              .range([h - padding, padding]);
+
+    var svg = d3.select('.report')
+                .append('svg')
+                .attr('width', w)
+                .attr('height', h);
+
+    var xAxis = d3.svg
+                  .axis()
+                  .scale(x)
+                  .orient('bottom')
+                  .ticks(d3.time.years, 5);
+
+    var yAxis = d3.svg
+                  .axis()
+                  .scale(y)
+                  .orient('left')
+                  .ticks(10);
+
+    svg.selectAll('rect')
+       .data(data.data)
+       .enter()
+       .append('rect')
+       .attr('fill', normalColor)
+       .attr("x", function(d) {
+         return x(new Date(d[0]));
+       })
+       .attr('y', function(d) {
+         return y(d[1]);
+       })
+       .attr('height', function(d) {
+         return d[1]/max * (h - 100);
+       })
+       .attr('width', Math.ceil(w / data.data.length))
+       .on('mousemove',function(d,i){
+         var event = window.event;
+          d3.select(this).attr('fill', hoverColor);
+          var month = new Date(d[0]).getMonth() + 1;
+          var jidu = ['第一季度','第二季度','第三季度','第四季度'];
+          var el = $('<div>' +
+                        '<div>' + d[0] + '</div>' +
+                        '<div>' + jidu[Math.ceil(month/3) - 1] + '</div>' +
+                        '<div>GDP:$'+ d[1] + ' Billion</div>' +
+                      '</div>');
+          el.css({
+            display: 'inline-block',
+            position: 'absolute',
+            left: (event.clientX + 2) + 'px',
+            top: (event.clientY + 2) + 'px',
+          })
+          el.addClass(d[0]+'-'+i);
+          el.addClass('pover');
+          $('.'+ d[0] +'-'+i).remove();
+          $('body').append(el);
+        })
+        .on('mouseout',function(d,i){
+          d3.select(this).attr("fill",normalColor);
+          $('.'+ d[0] +'-'+i).remove();
+        })
+
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', 'translate(0,' + (h - padding) + ')')
+        .call(xAxis);
+
+    svg.append('g')
+        .attr('class', 'axis')
+        .attr('transform', 'translate(' + padding + ',0)')
+        .call(yAxis);
+      }
+
+</script>
+
+</html>

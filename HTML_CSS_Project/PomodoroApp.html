@@ -1,0 +1,246 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css">
+  <style>
+    /*body{
+      background: #333333;
+      color: white;
+    }*/
+    .control-room{
+      margin: 20px 0px;
+    }
+    
+    .control-room .item-name{
+      display: inline-block;
+      width: 144px;
+      text-align: right;
+      font-weight: bold;
+      font-size: 18px;
+      margin-right: 6px;
+    }
+    
+    .control-room .item-time{
+      color: tomato;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    
+    .control-room .fa{
+      text-align: center;
+      cursor: pointer;
+      font-size: 17px;
+      margin: 0px 5px;
+    }
+    
+    .main{
+      cursor: pointer;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      position: relative;
+      display: inline-block;
+      width: 400px;
+      height: 400px;
+      background: yellowgreen;
+      color: #333;
+    }
+    .breakTime{
+      background: mediumseagreen;
+    }
+    .main .time,.status{
+      font-family: monospace;
+      width: 250px;
+      text-align: center;
+      display: inline-block;
+      position: absolute;
+      font-size: 44px;
+      top: 160px;
+      left: 74px;
+    }
+    
+    .status{
+      top: 82px;
+    }
+    
+    .main .per{
+      background-color: white;
+    }
+    
+    .item{
+      margin-bottom: 10px;
+      padding-left: 30px;
+    }
+    
+  </style>
+
+<body ng-app="PomodoroApp" ng-controller="mainCtrl as vm">
+  <div class="container">
+    
+    <div class="row">
+      <div class="col-xs-3"></div>
+      <div class="col-xs-6" style="padding-left: 76px;">
+        <div class="control-room">
+          <div class="item">
+            <span class="item-name">工作时间: </span>
+            <i class="fa fa-minus" ng-click="vm.game.change('sessionTime',-1)"></i>
+            <span class="item-time">{{vm.Pomodoro.sessionTime / 60000}}</span>
+            <i class="fa fa-plus" ng-click="vm.game.change('sessionTime',1)"></i>
+            <span class="item-tip">分钟</span>
+          </div>
+          <div class="item">
+            <span class="item-name">休息时间: </span>
+            <i class="fa fa-minus" ng-click="vm.game.change('breakTime',-1)"></i>
+            <span class="item-time">{{vm.Pomodoro.breakTime / 60000}}</span>
+            <i class="fa fa-plus" ng-click="vm.game.change('breakTime',1)"></i>
+            <span class="item-tip">分钟</span>
+          </div>
+        </div>
+        <div class="main" ng-class="{'breakTime': !vm.Pomodoro.isSession}" ng-click="vm.game.toggle()">
+          <div class="per" ng-if="vm.Pomodoro.isSession" ng-style="{'height':vm.Pomodoro.currentTime / vm.Pomodoro.sessionTime * 100 + '%'}"></div>
+          <div class="per" ng-if="!vm.Pomodoro.isSession" ng-style="{'height':vm.Pomodoro.currentTime / vm.Pomodoro.breakTime * 100 + '%'}"></div>
+          <div class="status">
+            <span>{{vm.Pomodoro.isSession? '工作时间' : '休息时间'}}</span>
+          </div>
+          <div class="time">
+            {{vm.Pomodoro.currentTime | toHHss}}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+  <script>
+    
+    (function(){
+      angular
+      .module('PomodoroApp',[])
+      .controller('mainCtrl',controller)
+      .filter('toHHss', function(){
+        return function (msd) {
+          
+          var time = parseFloat(msd) / 1000;
+          
+          if (null != time && "" != time) {
+            if (time >= 60 && time < 60 * 60) {
+              var minutes = parseInt(time / 60);
+              var second = time % 60;
+              time = minutes + ':' + second;
+            }
+            else if (time >= 60 * 60 && time < 60 * 60 * 24) {
+              var hours = parseInt(time / 3600);
+              var leftTime = time % 3600;
+              var minutes = parseInt(leftTime / 60);
+              var second = leftTime % 60;
+              time = hours + ':' + minutes + ':' + second;
+            }else{
+              time = time + '';
+            }
+          }else{
+            return '';
+          }
+          
+          time = time.split(':');
+          
+          time = _.map(time,function(str){
+            if(Number(str) <= 9){
+              return '0' + str;
+            }
+            return str;
+          })
+          
+          return time.join(':');
+        }
+      })
+      .filter('toPer', function(){
+        return function(input){
+          return (input * 100).toFixed(0);
+        }
+      })
+      
+      function controller($scope, $http, $location, $interval){
+        var vm = this;
+        
+        vm.game = {
+          // 开始计时;
+          run: function(){ 
+            vm.Pomodoro.runId = $interval(function(){
+              var time = vm.Pomodoro.currentTime - 1000;
+              if(time < 0){
+                if(vm.Pomodoro.isSession){
+                  vm.Pomodoro.currentTime = vm.Pomodoro.breakTime - 1000;
+                  vm.Pomodoro.isSession = false;
+                }else{
+                  vm.Pomodoro.currentTime = vm.Pomodoro.sessionTime - 1000;
+                  vm.Pomodoro.isSession = true;
+                }
+                return ;
+              }
+              vm.Pomodoro.currentTime = time;
+            },1000);
+          },
+          // 暂停计时;
+          stop: function(){
+            $interval.cancel(vm.Pomodoro.runId);
+          },
+          // 初始化 & 重置
+          init: function(force){
+            force || vm.game.stop();
+            vm.Pomodoro = new Pomodoro();
+          },
+          // 用户配置发生改变;
+          change: function(type, minutes){
+            var origin = vm.Pomodoro.getTime(type);
+            var change = origin + minutes >0 ? origin + minutes : 1;
+            vm.game.stop();
+            vm.Pomodoro.setTime(change,type);
+            vm.Pomodoro.currentTime = vm.Pomodoro.sessionTime;
+            vm.Pomodoro.isSession = true;
+            vm.Pomodoro.status = false;
+          },
+          // 开始 & 暂停
+          toggle: function(){
+            vm.Pomodoro.status ? vm.game.stop() : vm.game.run();
+            vm.Pomodoro.status = !vm.Pomodoro.status;
+          }
+        }
+        
+        vm.game.init(true);
+        
+        function Pomodoro(){ 
+          this.status = false;             // 是否在运行中;
+          this.isSession = true;           // 是否任务时间;
+          this.breakTime = 10 * 60000;      // 休息时间; 
+          this.sessionTime = 25 * 60000;    // 任务时间;
+          this.currentTime = 25 * 60000;    // 当前的时间;
+          this.runId = null;
+          this.setTime = function(minutes, type){
+            var time = minutes * 60000;
+            this[type] = time;
+            return time;
+          };
+          this.getTime = function(type){
+            return this[type] / 60000 || 0;
+          };
+        }
+     
+      }
+      
+    })();
+    
+  </script>
+
+</html>

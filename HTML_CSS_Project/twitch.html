@@ -1,0 +1,257 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+  <style>
+    .slow-in .nav-item-active{
+      width: 80px;
+      background-color: #4fc1e9;
+      transition: all cubic-bezier(0.65, 0.05, 0.36, 1) .4s;
+    }
+    
+    .slow-in .nav-item-name{
+      color: #4fc1e9;
+    }
+    
+    .nav{
+      border-bottom: 1px solid #eee;
+      margin-bottom: 10px;
+    }
+    
+    .nav-item{
+      padding: 10px 5px 0px 10px;
+      text-align: center;
+      display: inline-block;
+      width: 80px;
+      cursor: pointer;
+    }
+    
+    .nav-item-name{
+      width: 80px;
+    }
+    .nav-item-active{
+      margin-top: 6px;
+      width: 80px;
+      height: 4px;
+    }
+    
+    img{
+      width: 100px;
+      height: 100px;
+    }
+    
+    .channel{
+      margin: 10px 30px 0px 0px;
+      display: inline-block;
+      width: 180px;
+      height: 188px;
+      margin-left: 10px;
+      position: relative;
+      vertical-align: top;
+    }
+    
+    .profile_banner{
+      border: 2px solid #eee;
+      border-radius: 4px;
+      width: 180px;
+      height: 130px;
+    }
+    .logo{
+      border-radius: 50%;
+      border: 3px solid #eee;
+      position: absolute;
+      top: 100px;
+      left: -10px;
+      width: 50px;
+      height: 50px;
+    }
+    
+    marquee{
+      margin-left: 20px;
+      height: 25px;
+      width: 144px;
+    }
+    .game-status{
+      height: 25px;
+      padding-left: 16px;
+    }
+    
+    .up-status{
+      color: #999;
+    }
+  </style>
+
+<body ng-app="TwitchPage" ng-controller="mainCtrl as vm">
+  <div class="container">
+    <div class="row">
+      
+      <!-- NAV -->
+      <div class="col-xs-12">
+        <div class="nav">
+          <div class="nav-item" 
+            ng-repeat="(type, value) in vm.nav"
+            ng-click="vm.changeType(type);">
+            <div ng-class="{'slow-in':vm.nav[type]}">
+              <div class="nav-item-name">
+                {{type}}
+              </div>
+              <div class="nav-item-active">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- List -->
+      <div class="col-xs-12">
+        <div ng-repeat=" obj in vm.channelList" class="channel">
+          <a ng-href="{{obj.channel.url}}" target="_blank">
+            <img class="profile_banner" src="{{obj.channel.profile_banner || 'http://s8.sinaimg.cn/large/006bA15zgy6UMG0qshFa7&690'}}"/>
+            <img class="logo" src="{{obj.channel.logo || 'http://img3.duitang.com/uploads/item/201411/02/20141102021706_h4BNG.jpeg'}}"/>
+            <div class="game-status">
+              <marquee ng-show="obj.state.stream" direction="left" align="bottom" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1">
+                <span>[{{obj.state.stream.channel.game}}] </span>
+                <span>{{obj.state.stream.channel.status}}</span>
+              </marquee>
+            </div>
+            <div class="up-status">
+              <span>
+                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                {{obj.channel.name}}
+              </span>
+              <span class="pull-right">{{obj.state.stream ? 'Online' : 'Offline'}}</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+  <script>
+    
+    (function(){
+      angular
+      .module('TwitchPage',[])
+      .controller('mainCtrl',controller);
+      
+      function controller($scope, $http, $q){
+        var vm = this;
+        var api = 'https://api.twitch.tv/kraken/';
+        var cb = '?callback=jsonp';
+        var getPromise = [];
+        var channels = ["freecodecamp", "storbeck", "terakilobyte", "habathcx","RobotCaleb","thomasballinger","noobs2ninjas","beohoff","brunofin","comster404","test_channel","cretetion","sheevergaming","TR7K","OgamingSC2","ESL_SC2"]
+        vm.channelList = [];
+        vm.nav = {
+          All:true,
+          Online:false,
+          Offline:false,
+        };
+        vm.changeType = changeType;
+        search();
+          
+        ///////////////////////
+        $scope.$watch('vm.nav',function(nav){
+          console.log(nav);
+          var list = [];
+          if(nav.All){
+            vm.channelList = angular.copy(vm.originList);
+            return ;
+          }
+          _.each(vm.originList,function(channel){
+            if(nav.Online && channel.state.stream){
+              list.push(channel);
+              return ;
+            }
+            if(nav.Offline && !channel.state.stream){
+              list.push(channel);
+              return ;
+            }
+          })
+          vm.channelList = list;
+        },true)
+        
+        function search(){
+          
+          _.each(channels,function(channel){
+            getPromise.push(
+              getOne(channel)
+            );
+          })
+          
+          $q
+            .all(getPromise)
+            .then(function(data){
+              var channelList = [];
+              _.each(data, function(channel){
+                channelList.push(channel);
+              })
+              vm.originList = angular.copy(channelList);
+              vm.channelList = channelList;
+              console.log(vm.channelList);
+            })
+            .catch(function(){
+              console.log('HTTP ERROR !');
+            })
+        }
+        
+        function jsonpToObj(str, end){
+          return JSON.parse(str.slice(10,end));
+        }
+        
+        function getOne(channel){
+          
+          var deferred = $q.defer();
+          
+          $http
+            .get(api + 'channels/'+ channel + cb)
+            .success(success)
+            .error(error)
+            
+          function success(data_channel){
+            $http
+              .get(api + 'streams/'+ channel + cb)
+              .success(function(data_state){
+                deferred.resolve({
+                  state: jsonpToObj(data_state, -1),
+                  channel: jsonpToObj(data_channel, -1)
+                })
+              })
+              .error(error)
+          }
+          
+          function error(){
+            deferred.reject();
+          }
+          
+          return deferred.promise;
+          
+        }
+        
+        function changeType(type){
+          vm.nav.All = false;
+          vm.nav.Online = false;
+          vm.nav.Offline = false;
+          vm.nav[type] = true;
+        }
+        
+      }
+      
+    })();
+    
+  </script>
+
+</html>

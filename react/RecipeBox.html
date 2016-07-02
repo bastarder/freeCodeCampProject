@@ -1,0 +1,179 @@
+var storage = window.localStorage;
+// storage.getItem()
+// storage.setItem()
+var Modal = ReactBootstrap.Modal;
+var Button = ReactBootstrap.Button;
+var FormGroup = ReactBootstrap.FormGroup;
+var ControlLabel = ReactBootstrap.ControlLabel;
+var FormControl = ReactBootstrap.FormControl;
+var Panel = ReactBootstrap.Panel;
+var Accordion = ReactBootstrap.Accordion;
+var ListGroup = ReactBootstrap.ListGroup;
+var ListGroupItem = ReactBootstrap.ListGroupItem;
+
+var MainComp = React.createClass({
+  getInitialState() {
+    return { 
+      Cdata: []
+    };
+  },
+  componentDidMount() {
+    var data = storage.getItem('_bastarder_recipes');
+    if(data && JSON.parse(data).length > 0){
+       var Cdata = JSON.parse(data);
+    }else{
+       var Cdata = [{
+        Cname: '番茄炒蛋',
+        Clist: ['番茄','鸡蛋']
+      },{
+        Cname: '红烧肉',
+        Clist: ['猪肉','酱油','啤酒']
+      }] ;
+    }
+    
+    if(Cdata.length === this.state.Cdata.length){
+      return ;
+    }
+    
+    this.setState({
+      Cdata: Cdata
+    })
+  },
+  render(){
+    this.componentDidMount();
+    return (
+      <div>
+        <ClistComp list={this.state.Cdata} />
+        <AddComp Cdata={this.state.Cdata} />
+      </div>
+    )
+  }
+})
+
+var ClistComp = React.createClass({
+  delC: function(item,el){
+    var index = _.findIndex(this.props.list,{Cname:item.Cname});
+    if(index === -1){
+      return ;
+    }
+    
+    this.props.list.splice(index,1);
+    storage.setItem('_bastarder_recipes',JSON.stringify(this.props.list));
+    refresh();
+  },
+  render(){
+    var self = this;
+    var list = this.props.list.map(function(item,index){
+      var lines = item.Clist.map(function(one){
+        return (
+          <ListGroupItem>{one}</ListGroupItem>
+        )
+      }) 
+      return (
+        <Panel header={item.Cname} eventKey={item.Cname}>
+          <legend>所需食材</legend>
+          <ListGroup>
+            {lines}
+          </ListGroup>
+          <legend>操作</legend>
+          <button className="btn btn-info" onClick={self.delC.bind(this, item)}>删除</button>
+          <AddComp Cdata={self.props.list} changeData={item} changeIndex={index}/>
+        </Panel>
+      )
+    });
+    return (
+      <Accordion>
+        {list}
+      </Accordion>
+    )
+  }
+})
+
+var AddComp = React.createClass({
+  getInitialState() {
+    return { 
+      showModal: false 
+    };
+  },
+  close() {
+    this.setState({ showModal: false });
+  },
+  open() {
+    this.setState({ showModal: true });
+    var changeData = this.props.changeData;
+    if(changeData){
+      $('#Cname').val(changeData.Cname);
+      $('#Clist').val(changeData.Clist.join(','));
+    }
+  },
+  add() {
+    var Cname = $('#Cname').val();
+    var Clist = $('#Clist').val().split(',');
+    if(this.props.changeData){
+      this.props.Cdata.splice(Number(this.props.changeIndex),1,{
+        Cname:Cname,
+        Clist:Clist,
+      })
+      var newList = this.props.Cdata.concat([]);
+    }else{
+      var newList = this.props.Cdata.concat([{
+        Cname:Cname,
+        Clist:Clist,
+      }])
+    }
+
+    storage.setItem('_bastarder_recipes',JSON.stringify(newList));
+    this.setState({ showModal: false });
+    refresh();
+  },
+  render() {
+    var changeData = this.props.changeData;
+    var Cname = changeData? changeData.Cname : '';
+    var Clist = changeData? changeData.Clist.join(',') : '';
+    var ButtonName = changeData? '编辑' : '添加食谱';
+    var ButtonSaveName = changeData? '确认保存' : '确认添加';
+    return (
+      <div className="inline-block">
+        <Button onClick={this.open}>{ButtonName}</Button>
+        <Modal show={this.state.showModal} onHide={this.close}>
+          <Modal.Header closeButton>
+            <Modal.Title>{ButtonName}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <form>
+              <FormGroup controlId='Cnames'>
+                <ControlLabel>名称</ControlLabel>
+                <FormControl type="text" id='Cname' defaultValue={Cname}/>
+              </FormGroup>
+              <FormGroup controlId='Clists'>
+                <ControlLabel>所需材料</ControlLabel>
+                 <FormControl componentClass="textarea" placeholder="textarea" id='Clist' defaultValue={Clist}/>
+              </FormGroup>
+             </form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.add} bsStyle="primary">{ButtonSaveName}</Button>
+            <Button onClick={this.close} bsStyle="warning">取消</Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
+    )
+  }
+})
+
+function refresh(){ 
+  ReactDOM.render(<MainComp />, document.getElementById('main'));
+}
+
+ReactDOM.render(<MainComp />, document.getElementById('main'));
+
+
+
+.inline-block{
+  display:inline-block;
+  margin-left: 5px;
+}
+
+
+
+<div id="main"></div>

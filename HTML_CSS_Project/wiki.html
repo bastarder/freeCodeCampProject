@@ -1,0 +1,180 @@
+<html>
+<meta charset="UTF-8">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+  <style>
+    .item{
+      min-height: 80px;
+      border: 1px solid #eee;
+      margin-bottom: 10px;
+      border-radius: 3px;
+      box-shadow: 1px 1px 3px #eee;
+      cursor: pointer;
+      padding: 8px 0px 0px 20px;
+    }
+    .item:hover{
+      box-shadow: 1px 1px 3px greenyellow;
+      border: 1px solid greenyellow;
+    }
+    .item-title{
+      display: inline-block;
+      display: block;
+      font-size: 26px;
+      color: darkblue;
+    }
+    .item-extract{
+      display: inline-block;
+      color: #888888;
+    }
+    .item-img{
+      border: 1px solid #eee;
+    }
+    .nav{
+      margin-top: 8px;
+      padding: 0px 15px;
+      margin-bottom: 15px;
+    }
+    .search-title{
+      width: 300px;
+      height: 34px;
+      line-height: 34px;
+      font-size: 18px;
+    }
+    
+    .btn-handel{
+      display: inline-block;
+      height: 34px;
+      width: 78px;
+      vertical-align: top;
+      background: white;
+      border: 1px solid #eee;
+      color: #666;
+      text-align: center;
+      transition: background 0.4s ease 0s;
+    }
+    
+    .btn-handel:hover{
+      background: #eee;
+      color: white;
+      transition: background 0.4s ease 0s;
+    }
+    
+    .btn-random{
+      vertical-align: bottom;
+      display: inline-block;
+      margin-left: 10px;
+    }
+    
+    .loadingBar{
+      height: 120px;
+      text-align: center;
+      line-height: 110px;
+      font-size: 22px;
+      color: darkblue;
+    }
+    
+    .tips{
+      color: darkblue;
+      margin-bottom: 5px;
+    }
+    
+  </style>
+
+<body ng-app="WikiPage" ng-controller="mainCtrl as vm">
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12 nav">
+        <input ng-model="vm.title" class="search-title"/>
+        <button class="btn-handel" ng-click="vm.search();" ng-disabled="!vm.title">搜 索</button>
+        <a class="btn-random" ng-href="{{vm.randomUrl}}" target='_blank'>我想试试运气~</a>
+      </div>
+    </div>
+    <div class="row">
+      <div ng-repeat="(curid, obj) in vm.results" class="col-xs-12" ng-if="!vm.isLoading">
+        <div class="tips" ng-if="$index === 0">Wiki为您找到如下词条:</div>
+        <div class="item " ng-click="vm.openWiki(curid);" ng-if="!vm.isLoading">
+          <span class="item-title">{{obj.title}}</span>
+          <span class="item-extract">{{obj.extract}}<span>
+          <img src="{{obj.thumbnail.source}}" class="pull-right item-img"/>
+        </div>
+      </div>
+      <div ng-if="!vm.results && !vm.isLoading" class="col-xs-12">
+        <div class="item ">
+          <span class="item-title">Sorry !</span>
+          <span class="item-extract">没有查询到任何结果!<span>
+        </div>
+      </div>
+      <div ng-if="vm.isLoading" class="col-xs-12">
+        <div class="item loadingBar">
+          <span class="item-loading text-center">正在查询关键词 : {{vm.title}} ......</span>
+        </div>
+      </div>
+    </div>
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+  <script>
+    
+    (function(){
+      angular
+      .module('WikiPage',[])
+      .controller('mainCtrl',controller);
+      
+      function controller($scope, $http, $location){
+        var vm = this;
+        
+        var api = 'https://en.wikipedia.org/w/api.php?format=json&action=query&generator=search&gsrnamespace=0&gsrlimit=10&prop=pageimages|extracts&pilimit=max&exintro&explaintext&exsentences=1&exlimit=max&gsrsearch=';
+        var cb = '&callback=JSON_CALLBACK';
+        var redirectUrl = 'http://en.wikipedia.org/?curid=';
+        
+        vm.search = search;
+        vm.openWiki = openWiki;
+        vm.results = null;
+        vm.title = 'FreeCodeCamp';
+        vm.isLoading = false;
+        vm.randomUrl = 'http://en.wikipedia.org/wiki/Special:Random';
+
+        search();
+        
+        ///////////////////////
+        
+        function search(){
+          vm.isLoading = true;
+          $http
+            .jsonp(api + vm.title + cb)
+            .success(function(response){
+              vm.isLoading = false;
+              if(!response || !response.query || !response.query.pages){
+                console.error('HTTP ERROR!');
+                return ;
+              }
+              vm.results = angular.copy(response.query.pages);
+            })
+            .catch(function(){
+              vm.isLoading = false;
+            })
+        }
+        
+        function openWiki(curid){
+          window.open(redirectUrl + curid,'_blank');
+        };
+
+      }
+      
+    })();
+    
+  </script>
+
+</html>

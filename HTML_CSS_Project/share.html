@@ -1,0 +1,186 @@
+<html>
+<meta charset="UTF-8">
+  <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="http://apps.bdimg.com/libs/lodash/3.5.0/lodash.js"></script>
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="http://apps.bdimg.com/libs/fontawesome/4.4.0/css/font-awesome.min.css">
+  <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<style>
+  body{
+    background: aquamarine;
+  }
+  .change,.fa{
+    cursor: pointer;
+    margin-top: 15px;
+    display: block;
+    color: white;
+    background: aquamarine;
+    transition: background 0.4s ease 0s;
+    border: 1px solid aquamarine;
+    padding: 5px 8px;
+  }
+  .change:hover,.fa:hover{
+    color: aquamarine;
+    background: white;
+    transition: background 0.4s ease 0s;
+  }
+  
+  .messageBox{
+    margin-top: 10%;
+    margin-bottom: 50%;
+    padding: 40px 20px 10px 30px;
+    background: white;
+  }
+  .author{
+    margin-top: 10px;
+    font-family: cursive;
+    font-size: 15px;
+    text-align: right;
+  }
+  
+  #message span{
+    display: block
+  }
+  
+  #message{
+    font-size: 20px;
+    font-family: fantasy;
+  }
+  
+  i.fa{
+    font-size: 21px;
+    text-align: center;
+    display: inline-block;
+    width: 35px;
+    height: 32px;
+  }
+</style>
+
+<body>
+  <div class="container">
+
+    <div class="row">
+      <div class="col-xs-6 col-xs-offset-3 messageBox">
+        <div id="message">
+          <span class="quote">Keep your friends close, but your enemies closer.</span>
+          <span class="author">- The Godfather II</span>
+        </div>
+        <div>  
+          <i class="fa fa-twitter pull-left" onclick="postToWb();"></i>
+          <i class="fa fa-tumblr pull-left" onclick="shareToZone();"></i>
+          <i class="fa fa-github pull-left" onclick="shareToQQ();"></i>
+          <button class="change pull-right" onclick="getQuote();"> 换 一 个 </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center">
+      <hr>
+      <p>Written and coded by 
+        <a href="https://github.com/bastarders" target="_blank" title="GitHub">Bastarder
+        </a>.</p>
+    </footer>  
+  </div>  
+</body>
+
+<script src="http://qzonestyle.gtimg.cn/qzone/app/qzlike/qzopensl.js#jsdate=20111201" charset="utf-8"></script>
+<script src="http://connect.qq.com/widget/loader/loader.js" widget="shareqq" charset="utf-8"></script>
+
+<script type="text/javascript">
+  
+  // 分享到QQ空间;
+  function shareToZone(){
+    var p = {
+      url:'http://www.baidu.com', // 必须有一个域名才可以分享,百度你不要怪我~
+      showcount:'0',/*是否显示分享总数,显示：'1'，不显示：'0' */
+      desc:$('#message .quote').text() + $('#message .author').text(),/*默认分享理由(可选)*/
+      summary:'FreeCodeCamp',/*分享摘要(可选)*/
+      title:'FreeCodeCamp',/*分享标题(可选)*/
+      site:'FreeCodeCamp',/*分享来源 如：腾讯网(可选)*/
+      pics:'', /*分享图片的路径(可选)*/
+      style:'201',
+      width:113,
+      height:39
+    };
+    var s = [];
+    for(var i in p){
+      s.push(i + '=' + encodeURIComponent(p[i]||''));
+    };
+    window.open('http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + s.join('&'),'','width=800, height=500, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, location=yes, resizable=no, status=no');
+  }
+  
+  function postToWb(){
+		var _url = encodeURIComponent(document.location);
+		var _assname = encodeURI("0000000");//你注册的帐号，不是昵称
+		var _appkey = encodeURI("0000000");//你从腾讯获得的appkey
+		var _pic = encodeURI('');//（例如：var _pic='图片url1|图片url2|图片url3....）
+		var _t = $('#message .quote').text() + $('#message .author').text();//标题和描述信息
+		var metainfo = document.getElementsByTagName("meta");
+    
+		for(var metai = 0;metai < metainfo.length;metai++){
+			if((new RegExp('description','gi')).test(metainfo[metai].getAttribute("name"))){
+				_t = metainfo[metai].attributes["content"].value;
+			}
+		}
+		_t =  document.title + _t;//请在这里添加你自定义的分享内容
+    
+		if(_t.length > 120){
+			_t= _t.substr(0,117)+'...';
+		}
+		_t = encodeURI(_t);
+
+		var _u = 'http://share.v.t.qq.com/index.php?c=share&a=index&url='+_url+'&appkey='+_appkey+'&pic='+_pic+'&assname='+_assname+'&title='+_t;
+		window.open( _u,'', 'width=700, height=680, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, location=yes, resizable=no, status=no' );
+	}
+  
+  function shareToQQ(){
+    var p = {
+      url:'http://www.baidu.com', /*获取URL，可加上来自分享到QQ标识，方便统计*/
+      desc:$('#message .quote').text() + $('#message .author').text(), /*分享理由(风格应模拟用户对话),支持多分享语随机展现（使用|分隔）*/
+      title:'test title', /*分享标题(可选)*/
+      summary:'test summary', /*分享摘要(可选)*/
+      pics:'', /*分享图片(可选)*/
+      flash: '', /*视频地址(可选)*/
+      site:'来自吊炸天的本科生群主', /*分享来源(可选) 如：QQ分享*/
+      style:'201',
+      width:32,
+      height:32
+    };
+    var s = [];
+    for(var i in p){
+    s.push(i + '=' + encodeURIComponent(p[i]||''));
+    }
+    var _u = 'http://connect.qq.com/widget/shareqq/index.html?' + s.join('&');
+    window.open( _u,'', 'width=700, height=680, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, location=yes, resizable=no, status=no' );
+  }
+  
+  function getQuote(){
+    $.ajax({
+      headers: {
+        "X-Mashape-Key": "OivH71yd3tmshl9YKzFH7BTzBVRQp1RaKLajsnafgL2aPsfP9V",
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      url: 'https://andruxnet-random-famous-quotes.p.mashape.com/cat=',
+      success: function(response) {
+        var r = JSON.parse(response);
+        
+        $('#message').animate({
+          opacity : 0
+        },500,function(){
+          $('#message .quote').text(r.quote);
+          $('#message .author').text('- ' + r.author);
+          $('#message').animate({
+            opacity : 1
+          },500)
+        });
+
+      }
+    });
+  }
+
+</script>
+
+</html>
